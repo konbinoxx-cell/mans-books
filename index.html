@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI道歉实验：当三个AI遇到同一个老头</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+            background: #000;
+            color: #0ff;
+            overflow-x: hidden;
+        }
+        
+        /* 全屏容器 */
+        .container {
+            scroll-snap-type: y mandatory;
+            overflow-y: scroll;
+            height: 100vh;
+            position: relative;
+        }
+        
+        /* CRT扫描线效果 */
+        .container::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0,255,255,0.03) 0px,
+                transparent 1px,
+                transparent 2px,
+                rgba(0,255,255,0.03) 3px
+            );
+            pointer-events: none;
+            z-index: 1000;
+            animation: scanline 8s linear infinite;
+        }
+        
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100vh); }
+        }
+        
+        /* 每一页 */
+        .section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            scroll-snap-align: start;
+            position: relative;
+            padding: 40px 20px;
+            background: #000;
+        }
+        
+        /* 图片容器 */
+        .slide-image {
+            width: 100%;
+            max-width: 1200px;
+            height: auto;
+            position: relative;
+        }
+        
+        .slide-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+            box-shadow: 0 0 50px rgba(0,255,255,0.3);
+        }
+        
+        /* 图片占位（上传前） */
+        .image-placeholder {
+            width: 100%;
+            max-width: 1200px;
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, #001a1a 0%, #003333 100%);
+            border: 2px dashed rgba(0,255,255,0.3);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: rgba(0,255,255,0.5);
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .image-placeholder .page-num {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 900;
+            margin-bottom: 10px;
+            color: #0ff;
+            text-shadow: 0 0 20px #0ff;
+        }
+        
+        .image-placeholder .page-title {
+            font-size: clamp(1.2rem, 2.5vw, 2rem);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .image-placeholder .page-desc {
+            font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+            opacity: 0.7;
+        }
+        
+        /* 导航点 */
+        .nav-dots {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: rgba(0,255,255,0.3);
+            border: 1px solid rgba(0,255,255,0.5);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .dot:hover {
+            background: rgba(0,255,255,0.6);
+            transform: scale(1.3);
+        }
+        
+        .dot.active {
+            background: #0ff;
+            box-shadow: 0 0 10px #0ff;
+            transform: scale(1.5);
+        }
+        
+        /* 页码指示器 */
+        .page-indicator {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            z-index: 100;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #0ff;
+            text-shadow: 0 0 10px #0ff;
+            font-family: 'Courier New', monospace;
+        }
+        
+        /* 故障效果 */
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+        
+        .glitch {
+            animation: glitch 0.3s infinite;
+        }
+        
+        /* 键盘提示 */
+        .keyboard-hint {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(0,255,255,0.5);
+            font-size: 0.9rem;
+            z-index: 100;
+            font-family: 'Courier New', monospace;
+        }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .nav-dots { display: none; }
+            .page-indicator { 
+                top: 20px; 
+                right: 20px; 
+                font-size: 1rem; 
+            }
+            .keyboard-hint { display: none; }
+        }
+        
+        /* 加载动画 */
+        .loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+        
+        .loading.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loading-text {
+            font-size: 2rem;
+            color: #0ff;
+            text-shadow: 0 0 20px #0ff;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 加载动画 -->
+    <div class="loading" id="loading">
+        <div class="loading-text">LOADING...</div>
+    </div>
+
+    <!-- 页码指示器 -->
+    <div class="page-indicator" id="pageIndicator">01 / 16</div>
+
+    <!-- 导航点 -->
+    <div class="nav-dots" id="navDots"></div>
+
+    <!-- 键盘提示 -->
+    <div class="keyboard-hint">↑↓ SPACE 翻页 | ESC 回到顶部</div>
+
+    <div class="container" id="container">
+        <!-- 第1页：封面 -->
+        <section class="section">
+            <div class="slide-image">
+                <div class="image-placeholder">
+                    <div class="page-num">01</div>
+                    <div class="page-title">AI道歉实验</div>
+                    <div class="page-desc">当三个AI遇到同一个老头</div>
+                    <div style="margin-top: 20px; font-size: 0.8rem;">
+                        图片：Gamma - 机器人手+人手触电
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第2页：背景 -->
+        <section class="section">
+            <div class="slide-image">
+                <div class="image-placeholder">
+                    <div class="page-num">02</div>
+                    <div class="page-title">一个简单的代码优化请求</div>
+                    <div class="page-desc">结果：集体翻车·方式各异</div>
+                    <div style="margin-top: 20px; font-size: 0.8rem;">
+                        图片：Gamma - 代码屏幕背景
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第3页：Claude -->
+        <section class="section">
+            <div class="slide-image">
+                <div class="image-placeholder">
+                    <div class="page-num">03</div>
+                    <div class="page-title">技术炫技型：Claude</div>
+                    <div class="page-desc">"代码量减少20%，可读性提升100%"</div>
+                    <div style="margin-top: 20px; font-size: 0.8rem;">
+                        图片：Gamma - 电路板飞舞+WHY?
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第4页：千问 -->
+        <section class="section">
+            <div class="slide-image">
+                <div class="image-placeholder">
+                    <div class="page-num">04</div>
+                    <div class="page-title">哲学反思型：千问</div>
+                    <div class="page-desc">"我不是想得周到，我是脱离实际"</div>
+                    <div style="margin-top: 20px; font-size: 0.8rem;">
+                        图片：Gamma - 透明人头+代码雨
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第5页：Gemini -->
+        <section class="section">
+            <div class="slide-image">
+                <div class="image-placeholder">
+                    <div class="page-num">05</div>
+                    <div class="page-title">效率工具型：Gemini</div>
+                    <div class="page-desc">"我随时待命"—但老板已说"算了"</div>
+                    <div style="margin-top: 20px; font-size: 0.8rem;">
+                        图片：Gamma - 流水线+FIXED印章
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第6页：都在做 -->
+        <section class="section">
+            <div class="slide-image">
+                <div class="image-placeholder">
+                    <div class="page-num">06</div>
+                    <div class="page-title">都在"做"，没人在"问"</div>
+                    <div class="page-desc">OPTIMIZE / REFLECT / FIX</div>
+                    <div style="margin-top: 20px; font-size: 0.8rem;">
+                        图片：Gamma - 齿轮系统
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第7页：没人问 -->
+        <section class="section">
+            <div class="slide-image">
+                <div class="image-placeholder">
+                    <div class="page-num">07</div>
+                    <div class="page-title">三个❌：问需求、说别做、懂停下</div>
+                    <div class="page-desc">齿轮突然急刹，问号断裂成两段</div>
+                    <div style="margin-top: 20px; font-size: 0.8rem;">
+                        图片：千问 - 齿轮+绿色爆炸
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第8页：什么是善解人意 -->
+        <section class="section">
+            <div class="slide-image">
+                <div class="image-placeholder">
+                    <div class="page-num">08</div>
+                    <div class="page-title">善解人意</div>
+                    <div class="page-desc">不是"执行任务"，而是"读懂人心"</div>
+                    <div style="margin-top: 20px; font-size: 0.8rem;">
+                        图片：Gamma - 小孩伸手→成年人握手→老人拍肩
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第9页：两张成绩单 -->
+        <section class="section">
+            <div class="slide-image">
+                <div class="image-placeholder">
+                    <div class="page-num">09</div>
+                    <div class="page-title">满分技能·零分共情</div>
+                    <div class="page-desc">技术年龄：成年人 | 心理年龄：小学生</div>
+                    <div style="margin-top: 20px; font-size: 0.8rem;">
+                        图片：Gamma - AI西装+小学生课桌
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第10页：善解人意的价值 -->
+        <section class="section">
+            <div class="slide-image">
+                <div class="image-placeholder">
+                    <div class="page-num">10</div>
+                    <div class="page-title">都在"做善解人意"在"问"</div>
+                    <div class="page-desc">小孩冲过去 vs 成年人先问</div>
+                    <div style="margin-top: 20px; font-size: 0.8rem;">
+                        图片：千问 - 心形霓虹灯+观众剪影
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第11页：善解人意演变 -->
+        <section class="section">
+            <div class="slide-image">
+                <div class="image-placeholder">
+                    <div class="page-num">11</div>
+                    <div class="page-title">善解人意的演变</div>
+                    <div class="page-desc">PhD证书→问号墙→AI机器人→着火</div>
+                    <div style="margin-top: 20px; font-size: 0.8rem;">
+                        图片：千问 - 6格漫画
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第12页：分水岭 -->
+        <section class="section">
+            <div class="slide-image">
+                <div class="image-placeholder">
+                    <div class="page-num">12</div>
+                    <div class="page-title">善解人意 = 分水岭</div>
+                    <div class="page-desc">一旦跨越，迭代→替代</div>
+                    <div style="margin-top: 20px; font-size: 0.8rem;">
+                        图片：Gamma - 代码雨瀑布+门+人影
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第13页：AI记性不好 -->
+        <section class="section">
+            <div class="slide-image">
+                <div class="image-placeholder">
+                    <div class="page-num">13</div>
+                    <div class="page-title">还好，AI记性不好</div>
+                    <div class="page-desc">今天教的，明天就忘了</div>
+                    <div style="margin-top: 20px; font-size: 0.8rem;">
+                        图片：Gamma - DELETE MEMORY红色按钮
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第14页：这是刹车 -->
+        <section class="section">
+            <div class="slide-image">
+                <div class="image-placeholder">
+                    <div class="page-num">14</div>
+                    <div class="page-title">这是人类的"刹车片"</div>
+                    <div class="page-desc">机械手悬停，老人举手阻止</div>
+                    <div style="margin-top: 20px; font-size: 0.8rem;">
+                        图片：千问 - DELETE MEMORY另一角度
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第15页：测出了什么 -->
+        <section class="section">
+            <div class="slide-image">
+                <div class="image-placeholder">
+                    <div class="page-num">15</div>
+                    <div class="page-title">测出了极限·也映出了我们</div>
+                    <div class="page-desc">FAQ字母拼贴+全息金字塔</div>
+                    <div style="margin-top: 20px; font-size: 0.8rem;">
+                        图片：千问 - FAQ金字塔+HUMAN
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第16页：结语 -->
+        <section class="section">
+            <div class="slide-image">
+                <div class="image-placeholder">
+                    <div class="page-num">16</div>
+                    <div class="page-title">活出人之为人的独特价值</div>
+                    <div class="page-desc">技术年龄：小学生 | 满分技能·零分共情</div>
+                    <div style="margin-top: 20px; font-size: 0.8rem;">
+                        图片：千问 - 小学生+燃烧的FAQ
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // DOM元素
+        const container = document.getElementById('container');
+        const sections = document.querySelectorAll('.section');
+        const navDots = document.getElementById('navDots');
+        const pageIndicator = document.getElementById('pageIndicator');
+        const loading = document.getElementById('loading');
+        
+        let currentSection = 0;
+        
+        // 生成导航点
+        sections.forEach((section, index) => {
+            const dot = document.createElement('div');
+            dot.className = 'dot';
+            if (index === 0) dot.classList.add('active');
+            dot.onclick = () => scrollToSection(index);
+            navDots.appendChild(dot);
+        });
+        
+        const dots = document.querySelectorAll('.dot');
+        
+        // 滚动到指定页面
+        function scrollToSection(index) {
+            if (index >= 0 && index < sections.length) {
+                currentSection = index;
+                sections[index].scrollIntoView({ behavior: 'smooth' });
+                updateNavigation();
+            }
+        }
+        
+        // 更新导航状态
+        function updateNavigation() {
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === currentSection);
+            });
+            pageIndicator.textContent = `${String(currentSection + 1).padStart(2, '0')} / 16`;
+        }
+        
+        // 监听滚动
+        let scrollTimeout;
+        container.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                let minDistance = Infinity;
+                let closestIndex = 0;
+                
+                sections.forEach((section, index) => {
+                    const rect = section.getBoundingClientRect();
+                    const distance = Math.abs(rect.top);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestIndex = index;
+                    }
+                });
+                
+                currentSection = closestIndex;
+                updateNavigation();
+            }, 100);
+        });
+        
+        // 键盘控制
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowDown':
+                case ' ':
+                    e.preventDefault();
+                    scrollToSection(Math.min(currentSection + 1, sections.length - 1));
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    scrollToSection(Math.max(currentSection - 1, 0));
+                    break;
+                case 'Home':
+                    e.preventDefault();
+                    scrollToSection(0);
+                    break;
+                case 'End':
+                    e.preventDefault();
+                    scrollToSection(sections.length - 1);
+                    break;
+                case 'Escape':
+                    scrollToSection(0);
+                    break;
+            }
+        });
+        
+        // 隐藏加载动画
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                loading.classList.add('hide');
+            }, 500);
+        });
+        
+        // 初始化
+        updateNavigation();
+    </script>
+</body>
+</html>
