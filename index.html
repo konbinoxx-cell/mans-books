@@ -66,12 +66,28 @@
         .slide-image img {
             width: 100%;
             height: auto;
-            max-height: 85vh;
+            max-height: 92vh;
+            min-height: 80vh;
             display: block;
             margin: 0 auto;
             border-radius: 8px;
             box-shadow: 0 0 50px rgba(0,255,255,0.3);
             object-fit: contain;
+        }
+        
+        /* 第一页特别放大3倍 */
+        .section:first-child .slide-image {
+            max-width: 100%;
+            overflow: hidden;
+        }
+        
+        .section:first-child .slide-image img {
+            width: 100%;
+            max-width: none;
+            max-height: none;
+            min-height: auto;
+            transform: scale(3);
+            transform-origin: center center;
         }
         
         /* 导航点 */
