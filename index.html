@@ -54,6 +54,19 @@
             position: relative;
             padding: 40px 20px;
             background: #000;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { 
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1);
+            }
         }
         
         /* 图片容器 */
@@ -75,19 +88,16 @@
             object-fit: contain;
         }
         
-        /* 第一页特别放大3倍 */
+        /* 第一页调整大小 */
         .section:first-child .slide-image {
-            max-width: 100%;
-            overflow: hidden;
+            max-width: 800px;
         }
         
         .section:first-child .slide-image img {
             width: 100%;
-            max-width: none;
-            max-height: none;
+            max-width: 100%;
+            max-height: 70vh;
             min-height: auto;
-            transform: scale(0。8);
-            transform-origin: center center;
         }
         
         /* 导航点 */
@@ -315,7 +325,7 @@
         <!-- 第16页：结语 -->
         <section class="section">
             <div class="slide-image">
-                <img src="images/slides23.png" alt="DELETE MEMORY - 人类的刹车片">
+                <img src="images/slides18.png" alt="DELETE MEMORY - 人类的刹车片">
             </div>
         </section>
     </div>
@@ -345,7 +355,7 @@
         function scrollToSection(index) {
             if (index >= 0 && index < sections.length) {
                 currentSection = index;
-                sections[index].scrollIntoView({ behavior: 'smooth' });
+                sections[index].scrollIntoView({ behavior: 'auto' }); // 改成instant跳转
                 updateNavigation();
             }
         }
