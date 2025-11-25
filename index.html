@@ -59,54 +59,19 @@
         /* 图片容器 */
         .slide-image {
             width: 100%;
-            max-width: 1200px;
-            height: auto;
+            max-width: 1400px;
             position: relative;
         }
         
         .slide-image img {
             width: 100%;
             height: auto;
+            max-height: 85vh;
             display: block;
+            margin: 0 auto;
             border-radius: 8px;
             box-shadow: 0 0 50px rgba(0,255,255,0.3);
-        }
-        
-        /* 图片占位（上传前） */
-        .image-placeholder {
-            width: 100%;
-            max-width: 1200px;
-            aspect-ratio: 16/9;
-            background: linear-gradient(135deg, #001a1a 0%, #003333 100%);
-            border: 2px dashed rgba(0,255,255,0.3);
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: rgba(0,255,255,0.5);
-            font-size: clamp(1rem, 2vw, 1.5rem);
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .image-placeholder .page-num {
-            font-size: clamp(2rem, 4vw, 3rem);
-            font-weight: 900;
-            margin-bottom: 10px;
-            color: #0ff;
-            text-shadow: 0 0 20px #0ff;
-        }
-        
-        .image-placeholder .page-title {
-            font-size: clamp(1.2rem, 2.5vw, 2rem);
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-        
-        .image-placeholder .page-desc {
-            font-size: clamp(0.9rem, 1.5vw, 1.2rem);
-            opacity: 0.7;
+            object-fit: contain;
         }
         
         /* 导航点 */
@@ -154,20 +119,6 @@
             font-family: 'Courier New', monospace;
         }
         
-        /* 故障效果 */
-        @keyframes glitch {
-            0% { transform: translate(0); }
-            20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(-2px, -2px); }
-            60% { transform: translate(2px, 2px); }
-            80% { transform: translate(2px, -2px); }
-            100% { transform: translate(0); }
-        }
-        
-        .glitch {
-            animation: glitch 0.3s infinite;
-        }
-        
         /* 键盘提示 */
         .keyboard-hint {
             position: fixed;
@@ -189,6 +140,9 @@
                 font-size: 1rem; 
             }
             .keyboard-hint { display: none; }
+            .slide-image img {
+                max-height: 90vh;
+            }
         }
         
         /* 加载动画 */
@@ -240,224 +194,112 @@
         <!-- 第1页：封面 -->
         <section class="section">
             <div class="slide-image">
-                <div class="image-placeholder">
-                    <div class="page-num">01</div>
-                    <div class="page-title">AI道歉实验</div>
-                    <div class="page-desc">当三个AI遇到同一个老头</div>
-                    <div style="margin-top: 20px; font-size: 0.8rem;">
-                        图片：Gamma - 机器人手+人手触电
-                    </div>
-                </div>
+                <img src="images/slides1.png" alt="AI道歉实验封面">
             </div>
         </section>
 
         <!-- 第2页：背景 -->
         <section class="section">
             <div class="slide-image">
-                <div class="image-placeholder">
-                    <div class="page-num">02</div>
-                    <div class="page-title">一个简单的代码优化请求</div>
-                    <div class="page-desc">结果：集体翻车·方式各异</div>
-                    <div style="margin-top: 20px; font-size: 0.8rem;">
-                        图片：Gamma - 代码屏幕背景
-                    </div>
-                </div>
+                <img src="images/slides2.png" alt="代码优化请求背景">
             </div>
         </section>
 
-        <!-- 第3页：Claude -->
+        <!-- 第3页：Claude技术炫技型 -->
         <section class="section">
             <div class="slide-image">
-                <div class="image-placeholder">
-                    <div class="page-num">03</div>
-                    <div class="page-title">技术炫技型：Claude</div>
-                    <div class="page-desc">"代码量减少20%，可读性提升100%"</div>
-                    <div style="margin-top: 20px; font-size: 0.8rem;">
-                        图片：Gamma - 电路板飞舞+WHY?
-                    </div>
-                </div>
+                <img src="images/slides4.png" alt="Claude技术炫技型">
             </div>
         </section>
 
-        <!-- 第4页：千问 -->
+        <!-- 第4页：千问哲学反思型 -->
         <section class="section">
             <div class="slide-image">
-                <div class="image-placeholder">
-                    <div class="page-num">04</div>
-                    <div class="page-title">哲学反思型：千问</div>
-                    <div class="page-desc">"我不是想得周到，我是脱离实际"</div>
-                    <div style="margin-top: 20px; font-size: 0.8rem;">
-                        图片：Gamma - 透明人头+代码雨
-                    </div>
-                </div>
+                <img src="images/slides19.png" alt="千问哲学反思型">
             </div>
         </section>
 
-        <!-- 第5页：Gemini -->
+        <!-- 第5页：Gemini效率工具型 -->
         <section class="section">
             <div class="slide-image">
-                <div class="image-placeholder">
-                    <div class="page-num">05</div>
-                    <div class="page-title">效率工具型：Gemini</div>
-                    <div class="page-desc">"我随时待命"—但老板已说"算了"</div>
-                    <div style="margin-top: 20px; font-size: 0.8rem;">
-                        图片：Gamma - 流水线+FIXED印章
-                    </div>
-                </div>
+                <img src="images/slides5.png" alt="Gemini效率工具型">
             </div>
         </section>
 
         <!-- 第6页：都在做 -->
         <section class="section">
             <div class="slide-image">
-                <div class="image-placeholder">
-                    <div class="page-num">06</div>
-                    <div class="page-title">都在"做"，没人在"问"</div>
-                    <div class="page-desc">OPTIMIZE / REFLECT / FIX</div>
-                    <div style="margin-top: 20px; font-size: 0.8rem;">
-                        图片：Gamma - 齿轮系统
-                    </div>
-                </div>
+                <img src="images/slides6.png" alt="都在做，没人在问">
             </div>
         </section>
 
         <!-- 第7页：没人问 -->
         <section class="section">
             <div class="slide-image">
-                <div class="image-placeholder">
-                    <div class="page-num">07</div>
-                    <div class="page-title">三个❌：问需求、说别做、懂停下</div>
-                    <div class="page-desc">齿轮突然急刹，问号断裂成两段</div>
-                    <div style="margin-top: 20px; font-size: 0.8rem;">
-                        图片：千问 - 齿轮+绿色爆炸
-                    </div>
-                </div>
+                <img src="images/slides7.png" alt="三个叉：问需求、说别做、懂停下">
             </div>
         </section>
 
-        <!-- 第8页：什么是善解人意 -->
+        <!-- 第8页：善解人意定义 -->
         <section class="section">
             <div class="slide-image">
-                <div class="image-placeholder">
-                    <div class="page-num">08</div>
-                    <div class="page-title">善解人意</div>
-                    <div class="page-desc">不是"执行任务"，而是"读懂人心"</div>
-                    <div style="margin-top: 20px; font-size: 0.8rem;">
-                        图片：Gamma - 小孩伸手→成年人握手→老人拍肩
-                    </div>
-                </div>
+                <img src="images/slides14.png" alt="善解人意：不是执行任务，而是读懂人心">
             </div>
         </section>
 
         <!-- 第9页：两张成绩单 -->
         <section class="section">
             <div class="slide-image">
-                <div class="image-placeholder">
-                    <div class="page-num">09</div>
-                    <div class="page-title">满分技能·零分共情</div>
-                    <div class="page-desc">技术年龄：成年人 | 心理年龄：小学生</div>
-                    <div style="margin-top: 20px; font-size: 0.8rem;">
-                        图片：Gamma - AI西装+小学生课桌
-                    </div>
-                </div>
+                <img src="images/slides13.png" alt="满分技能·零分共情">
             </div>
         </section>
 
-        <!-- 第10页：善解人意的价值 -->
+        <!-- 第10页：善解人意演变 -->
         <section class="section">
             <div class="slide-image">
-                <div class="image-placeholder">
-                    <div class="page-num">10</div>
-                    <div class="page-title">都在"做善解人意"在"问"</div>
-                    <div class="page-desc">小孩冲过去 vs 成年人先问</div>
-                    <div style="margin-top: 20px; font-size: 0.8rem;">
-                        图片：千问 - 心形霓虹灯+观众剪影
-                    </div>
-                </div>
+                <img src="images/slides8.png" alt="善解人意的演变">
             </div>
         </section>
 
-        <!-- 第11页：善解人意演变 -->
+        <!-- 第11页：AI记性不好 -->
         <section class="section">
             <div class="slide-image">
-                <div class="image-placeholder">
-                    <div class="page-num">11</div>
-                    <div class="page-title">善解人意的演变</div>
-                    <div class="page-desc">PhD证书→问号墙→AI机器人→着火</div>
-                    <div style="margin-top: 20px; font-size: 0.8rem;">
-                        图片：千问 - 6格漫画
-                    </div>
-                </div>
+                <img src="images/slides10.png" alt="还好，AI记性不好">
             </div>
         </section>
 
         <!-- 第12页：分水岭 -->
         <section class="section">
             <div class="slide-image">
-                <div class="image-placeholder">
-                    <div class="page-num">12</div>
-                    <div class="page-title">善解人意 = 分水岭</div>
-                    <div class="page-desc">一旦跨越，迭代→替代</div>
-                    <div style="margin-top: 20px; font-size: 0.8rem;">
-                        图片：Gamma - 代码雨瀑布+门+人影
-                    </div>
-                </div>
+                <img src="images/slides15.png" alt="善解人意=分水岭">
             </div>
         </section>
 
-        <!-- 第13页：AI记性不好 -->
+        <!-- 第13页：第三层人性 -->
         <section class="section">
             <div class="slide-image">
-                <div class="image-placeholder">
-                    <div class="page-num">13</div>
-                    <div class="page-title">还好，AI记性不好</div>
-                    <div class="page-desc">今天教的，明天就忘了</div>
-                    <div style="margin-top: 20px; font-size: 0.8rem;">
-                        图片：Gamma - DELETE MEMORY红色按钮
-                    </div>
-                </div>
+                <img src="images/slides11.png" alt="第三层：人性">
             </div>
         </section>
 
-        <!-- 第14页：这是刹车 -->
+        <!-- 第14页：都在做没人问特写 -->
         <section class="section">
             <div class="slide-image">
-                <div class="image-placeholder">
-                    <div class="page-num">14</div>
-                    <div class="page-title">这是人类的"刹车片"</div>
-                    <div class="page-desc">机械手悬停，老人举手阻止</div>
-                    <div style="margin-top: 20px; font-size: 0.8rem;">
-                        图片：千问 - DELETE MEMORY另一角度
-                    </div>
-                </div>
+                <img src="images/slides17.png" alt="都在做，没人在问">
             </div>
         </section>
 
-        <!-- 第15页：测出了什么 -->
+        <!-- 第15页：FAQ测出极限 -->
         <section class="section">
             <div class="slide-image">
-                <div class="image-placeholder">
-                    <div class="page-num">15</div>
-                    <div class="page-title">测出了极限·也映出了我们</div>
-                    <div class="page-desc">FAQ字母拼贴+全息金字塔</div>
-                    <div style="margin-top: 20px; font-size: 0.8rem;">
-                        图片：千问 - FAQ金字塔+HUMAN
-                    </div>
-                </div>
+                <img src="images/slides12.png" alt="测出了极限，也映出了我们">
             </div>
         </section>
 
         <!-- 第16页：结语 -->
         <section class="section">
             <div class="slide-image">
-                <div class="image-placeholder">
-                    <div class="page-num">16</div>
-                    <div class="page-title">活出人之为人的独特价值</div>
-                    <div class="page-desc">技术年龄：小学生 | 满分技能·零分共情</div>
-                    <div style="margin-top: 20px; font-size: 0.8rem;">
-                        图片：千问 - 小学生+燃烧的FAQ
-                    </div>
-                </div>
+                <img src="images/slides18.png" alt="DELETE MEMORY - 人类的刹车片">
             </div>
         </section>
     </div>
