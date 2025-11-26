@@ -193,24 +193,66 @@
             cursor: pointer;
         }
         
-        .size-controls {
-            display: flex;
-            gap: 10px;
+        .sticker-position-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
             margin-top: 10px;
         }
         
-        .size-controls button {
-            flex: 1;
+        .sticker-position-controls button {
             padding: 8px;
             background: #6c757d;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 12px;
         }
         
-        .size-controls button:hover {
+        .sticker-position-controls button:hover {
             background: #5a6268;
+        }
+        
+        .text-style-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .text-style-controls button {
+            padding: 8px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .text-style-controls button:hover {
+            background: #5a6268;
+        }
+        
+        .color-picker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .color-picker label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .color-picker input {
+            width: 40px;
+            height: 30px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
         }
         
         .status-message {
@@ -301,10 +343,17 @@
                 
                 <div class="control-group">
                     <h3>👐 手势图案</h3>
-                    <button class="btn" onclick="addSticker('praise')">🙌 赞美手势</button>
-                    <button class="btn" onclick="addSticker('prayer')">🙏 祈祷手势</button>
-                    <button class="btn" onclick="addSticker('celebration')">🎉 庆祝手势</button>
-                    <button class="btn" onclick="addSticker('blessing')">✝️ 祝福手势</button>
+                    <button class="btn" onclick="addSticker('praise', 'left')">🙌 左上角</button>
+                    <button class="btn" onclick="addSticker('praise', 'right')">🙌 右上角</button>
+                    <button class="btn" onclick="addSticker('prayer', 'left')">🙏 左上角</button>
+                    <button class="btn" onclick="addSticker('prayer', 'right')">🙏 右上角</button>
+                    
+                    <div class="sticker-position-controls">
+                        <button onclick="addSticker('celebration', 'left')">🎉 左上庆祝</button>
+                        <button onclick="addSticker('celebration', 'right')">🎉 右上庆祝</button>
+                        <button onclick="addSticker('blessing', 'left')">✝️ 左上祝福</button>
+                        <button onclick="addSticker('blessing', 'right')">✝️ 右上祝福</button>
+                    </div>
                     
                     <div class="custom-frame-input">
                         <input type="text" id="customStickerUrl" placeholder="粘贴手势图片网址...">
@@ -314,9 +363,18 @@
                 
                 <div class="control-group">
                     <h3>📝 文字框</h3>
-                    <button class="btn" onclick="addTextBox()">添加文字框</button>
+                    <button class="btn" onclick="addTextBox()">添加底部文字框</button>
                     
-                    <div class="size-controls">
+                    <div class="color-picker">
+                        <label>背景色:</label>
+                        <input type="color" id="textBgColor" value="#ffffff">
+                        <label>文字色:</label>
+                        <input type="color" id="textColor" value="#2c3e50">
+                    </div>
+                    
+                    <div class="text-style-controls">
+                        <button onclick="changeTextBackground()">应用背景色</button>
+                        <button onclick="changeTextColor()">应用文字色</button>
                         <button onclick="bringForward()">上移一层</button>
                         <button onclick="sendBackward()">下移一层</button>
                     </div>
@@ -336,7 +394,7 @@
                 </div>
                 
                 <div class="instruction">
-                    💡 提示：新相框会自动替换旧相框，其他元素可以自由拖拽调整
+                    💡 提示：手势放在左上/右上角，文字框在底部，可自定义颜色
                 </div>
                 
                 <div id="statusMessage" class="status-message hidden"></div>
@@ -349,6 +407,7 @@
         const canvas = new fabric.Canvas('canvas');
         let backgroundFrame = null;
         let currentFrameType = null;
+        let currentTextbox = null;
 
         // 显示状态消息
         function showStatus(message, type = 'success') {
@@ -408,10 +467,10 @@
                     top: 0,
                     width: canvas.width,
                     height: canvas.height,
-                    selectable: false, // 不可选择，避免误操作
+                    selectable: false,
                     hasControls: false,
                     hasBorders: false,
-                    evented: false, // 不响应事件
+                    evented: false,
                     lockMovementX: true,
                     lockMovementY: true,
                     lockRotation: true,
@@ -420,19 +479,11 @@
                     excludeFromExport: false
                 });
                 
-                // 确保相框在最底层
                 canvas.add(newFrame);
                 canvas.sendToBack(newFrame);
                 backgroundFrame = newFrame;
-                
-                // 确保其他元素在相框之上
-                canvas.getObjects().forEach(obj => {
-                    if (obj !== backgroundFrame) {
-                        canvas.bringToFront(obj);
-                    }
-                });
-                
                 canvas.renderAll();
+                
                 showStatus('新相框已替换旧相框！');
             }, null, { crossOrigin: 'anonymous' });
         }
@@ -484,10 +535,6 @@
                     });
                     
                     canvas.add(img);
-                    // 确保图片在相框之上
-                    if (backgroundFrame) {
-                        canvas.bringToFront(img);
-                    }
                     canvas.renderAll();
                     
                     showStatus('图片上传成功！可以拖拽调整大小和位置');
@@ -504,17 +551,21 @@
             blessing: 'https://images.unsplash.com/photo-1518481852452-9415bceeba4d?w=200&h=200&fit=crop&auto=format'
         };
 
-        // 添加手势图案
-        function addSticker(stickerType) {
+        // 添加手势图案（放在左上或右上角）
+        function addSticker(stickerType, position = 'left') {
             const stickerUrl = stickerUrls[stickerType];
             if (!stickerUrl) return;
             
             fabric.Image.fromURL(stickerUrl, function(sticker) {
+                // 设置位置：左上角或右上角
+                const left = position === 'left' ? 50 : canvas.width - 150;
+                const top = 50;
+                
                 sticker.set({
-                    left: 600,
-                    top: 350,
-                    scaleX: 0.2,
-                    scaleY: 0.2,
+                    left: left,
+                    top: top,
+                    scaleX: 0.15,
+                    scaleY: 0.15,
                     selectable: true,
                     hasControls: true,
                     cornerStyle: 'circle',
@@ -523,12 +574,8 @@
                 });
                 
                 canvas.add(sticker);
-                // 确保图案在相框之上
-                if (backgroundFrame) {
-                    canvas.bringToFront(sticker);
-                }
                 canvas.renderAll();
-                showStatus('手势图案已添加！可以拖拽调整');
+                showStatus(`手势图案已添加到${position === 'left' ? '左上角' : '右上角'}！`);
             }, null, { crossOrigin: 'anonymous' });
         }
 
@@ -542,10 +589,10 @@
             
             fabric.Image.fromURL(stickerUrl, function(sticker) {
                 sticker.set({
-                    left: 600,
-                    top: 350,
-                    scaleX: 0.2,
-                    scaleY: 0.2,
+                    left: 50,
+                    top: 50,
+                    scaleX: 0.15,
+                    scaleY: 0.15,
                     selectable: true,
                     hasControls: true,
                     cornerStyle: 'circle',
@@ -553,45 +600,68 @@
                 });
                 
                 canvas.add(sticker);
-                // 确保图案在相框之上
-                if (backgroundFrame) {
-                    canvas.bringToFront(sticker);
-                }
                 canvas.renderAll();
-                showStatus('自定义图案已添加！可以拖拽调整');
+                showStatus('自定义图案已添加到左上角！');
                 document.getElementById('customStickerUrl').value = '';
             }, null, { crossOrigin: 'anonymous' });
         }
 
-        // 添加文字框
+        // 添加文字框（放在底部）
         function addTextBox() {
             const textContent = prompt('请输入文字内容:', '欢迎参加读书会分享');
             if (!textContent) return;
             
+            // 移除之前的文字框
+            if (currentTextbox) {
+                canvas.remove(currentTextbox);
+            }
+            
             const textbox = new fabric.Textbox(textContent, {
-                left: 100,
-                top: 50,
+                left: canvas.width / 2 - 150,
+                top: canvas.height - 100, // 底部位置
                 width: 300,
                 fontSize: 24,
-                fill: '#2c3e50',
+                fill: document.getElementById('textColor').value,
                 fontFamily: 'Microsoft YaHei',
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                backgroundColor: document.getElementById('textBgColor').value,
                 padding: 15,
                 borderColor: '#667eea',
                 cornerColor: '#667eea',
                 cornerStyle: 'circle',
                 transparentCorners: false,
                 selectable: true,
-                hasControls: true
+                hasControls: true,
+                textAlign: 'center'
             });
             
             canvas.add(textbox);
-            // 确保文字框在相框之上
-            if (backgroundFrame) {
-                canvas.bringToFront(textbox);
-            }
+            currentTextbox = textbox;
             canvas.renderAll();
-            showStatus('文字框已添加！可以拖拽调整大小和位置');
+            showStatus('文字框已添加到底部！可以调整颜色和位置');
+        }
+
+        // 修改文字背景色
+        function changeTextBackground() {
+            if (currentTextbox) {
+                const color = document.getElementById('textBgColor').value;
+                currentTextbox.set('backgroundColor', color);
+                canvas.renderAll();
+                showStatus('文字背景色已更新！');
+            } else {
+                showStatus('请先添加文字框！', 'error');
+            }
+        }
+
+        // 修改文字颜色
+        function changeTextColor() {
+            if (currentTextbox) {
+                const color = document.getElementById('textColor').value;
+                currentTextbox.set('fill', color);
+                canvas.renderAll();
+                showStatus('文字颜色已更新！');
+            } else {
+                showStatus('请先添加文字框！', 'error');
+            }
         }
 
         // 图层控制
@@ -607,13 +677,7 @@
             const activeObject = canvas.getActiveObject();
             if (activeObject && activeObject !== backgroundFrame) {
                 canvas.sendBackwards(activeObject);
-                // 确保不会移到相框下面
-                if (backgroundFrame && canvas.getObjects().indexOf(activeObject) <= canvas.getObjects().indexOf(backgroundFrame)) {
-                    canvas.bringForward(activeObject);
-                    showStatus('元素不能移到相框底板下方');
-                } else {
-                    showStatus('元素已下移一层');
-                }
+                showStatus('元素已下移一层');
             }
         }
 
@@ -625,23 +689,29 @@
                     canvas.remove(obj);
                 }
             });
+            currentTextbox = null;
             showStatus('已清除所有内容（相框保留）');
         }
 
-        // 下载图片
+        // 修复下载功能
         function downloadImage() {
             if (canvas.getObjects().length === 0) {
                 showStatus('画布为空，无法下载', 'error');
                 return;
             }
             
-            const dataURL = canvas.toDataURL({
-                format: 'png',
-                quality: 1
-            });
-            
+            // 创建一个临时链接进行下载
             const link = document.createElement('a');
             link.download = `读书会图片_${new Date().getTime()}.png`;
+            
+            // 使用 toDataURLWithMultiplier 提高图片质量
+            canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+            const dataURL = canvas.toDataURL({
+                format: 'png',
+                quality: 1,
+                multiplier: 2 // 提高分辨率
+            });
+            
             link.href = dataURL;
             document.body.appendChild(link);
             link.click();
