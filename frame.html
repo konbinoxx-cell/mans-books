@@ -243,13 +243,19 @@
             margin-top: 5px;
             text-align: center;
         }
+        
+        .lock-icon {
+            color: #28a745;
+            font-size: 14px;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>📚 读书会图片编辑器</h1>
-            <p>为Zoom截图添加相框、手势图案和文字框 - 支持拖拽调整大小</p>
+            <p>为Zoom截图添加相框、手势图案和文字框 - 新相框自动覆盖旧相框</p>
         </div>
         
         <div class="content">
@@ -262,8 +268,8 @@
                 </div>
                 
                 <div class="control-group">
-                    <h3>🎨 相框设置</h3>
-                    <p class="instruction">先选择相框，然后上传图片进行叠加</p>
+                    <h3>🎨 相框设置 <span class="lock-icon">🔄 新相框覆盖旧相框</span></h3>
+                    <p class="instruction">每次应用新相框会自动替换旧相框</p>
                     
                     <div class="frame-preview">
                         <div class="frame-item" onclick="selectFrame('christmas')">
@@ -330,7 +336,7 @@
                 </div>
                 
                 <div class="instruction">
-                    💡 提示：选中元素后可以拖拽移动、调整大小和旋转
+                    💡 提示：新相框会自动替换旧相框，其他元素可以自由拖拽调整
                 </div>
                 
                 <div id="statusMessage" class="status-message hidden"></div>
@@ -341,7 +347,7 @@
     <script>
         // 初始化Fabric.js画布
         const canvas = new fabric.Canvas('canvas');
-        let selectedFrame = null;
+        let backgroundFrame = null;
         let currentFrameType = null;
 
         // 显示状态消息
@@ -366,10 +372,10 @@
             // 添加当前选择
             event.target.closest('.frame-item').classList.add('active');
             currentFrameType = frameType;
-            showStatus(`已选择 ${frameType} 相框，点击"应用相框"按钮使用`);
+            showStatus(`已选择 ${frameType} 相框，点击"应用相框"按钮替换当前相框`);
         }
 
-        // 应用选中的相框
+        // 应用选中的相框（自动覆盖旧的）
         function applySelectedFrame() {
             if (!currentFrameType) {
                 showStatus('请先选择一个相框！', 'error');
@@ -386,39 +392,52 @@
             loadFrame(frameUrls[currentFrameType]);
         }
 
-        // 加载相框
+        // 加载相框作为底板（自动移除旧的）
         function loadFrame(frameUrl) {
-            showStatus('正在加载相框...');
+            showStatus('正在加载新相框，替换旧相框...');
             
-            fabric.Image.fromURL(frameUrl, function(frame) {
-                // 移除之前的相框
-                if (selectedFrame) {
-                    canvas.remove(selectedFrame);
+            fabric.Image.fromURL(frameUrl, function(newFrame) {
+                // 自动移除之前的相框
+                if (backgroundFrame) {
+                    canvas.remove(backgroundFrame);
                 }
                 
-                // 设置相框覆盖整个画布
-                frame.set({
+                // 设置新相框作为底板
+                newFrame.set({
                     left: 0,
                     top: 0,
                     width: canvas.width,
                     height: canvas.height,
-                    selectable: true, // 允许选择和调整
-                    hasControls: true,
-                    lockUniScaling: false,
-                    cornerStyle: 'circle',
-                    transparentCorners: false
+                    selectable: false, // 不可选择，避免误操作
+                    hasControls: false,
+                    hasBorders: false,
+                    evented: false, // 不响应事件
+                    lockMovementX: true,
+                    lockMovementY: true,
+                    lockRotation: true,
+                    lockScalingX: true,
+                    lockScalingY: true,
+                    excludeFromExport: false
                 });
                 
-                canvas.add(frame);
-                canvas.sendToBack(frame); // 放到最底层
-                selectedFrame = frame;
-                canvas.renderAll();
+                // 确保相框在最底层
+                canvas.add(newFrame);
+                canvas.sendToBack(newFrame);
+                backgroundFrame = newFrame;
                 
-                showStatus('相框已添加！可以拖拽调整大小和位置');
+                // 确保其他元素在相框之上
+                canvas.getObjects().forEach(obj => {
+                    if (obj !== backgroundFrame) {
+                        canvas.bringToFront(obj);
+                    }
+                });
+                
+                canvas.renderAll();
+                showStatus('新相框已替换旧相框！');
             }, null, { crossOrigin: 'anonymous' });
         }
 
-        // 添加自定义相框
+        // 添加自定义相框（自动覆盖旧的）
         function addCustomFrame() {
             const frameUrl = document.getElementById('customFrameUrl').value.trim();
             if (!frameUrl) {
@@ -432,9 +451,9 @@
 
         // 移除相框
         function removeFrame() {
-            if (selectedFrame) {
-                canvas.remove(selectedFrame);
-                selectedFrame = null;
+            if (backgroundFrame) {
+                canvas.remove(backgroundFrame);
+                backgroundFrame = null;
                 showStatus('相框已移除');
             } else {
                 showStatus('没有相框可移除', 'error');
@@ -465,7 +484,10 @@
                     });
                     
                     canvas.add(img);
-                    canvas.bringToFront(img); // 确保图片在相框上方
+                    // 确保图片在相框之上
+                    if (backgroundFrame) {
+                        canvas.bringToFront(img);
+                    }
                     canvas.renderAll();
                     
                     showStatus('图片上传成功！可以拖拽调整大小和位置');
@@ -501,6 +523,10 @@
                 });
                 
                 canvas.add(sticker);
+                // 确保图案在相框之上
+                if (backgroundFrame) {
+                    canvas.bringToFront(sticker);
+                }
                 canvas.renderAll();
                 showStatus('手势图案已添加！可以拖拽调整');
             }, null, { crossOrigin: 'anonymous' });
@@ -527,6 +553,10 @@
                 });
                 
                 canvas.add(sticker);
+                // 确保图案在相框之上
+                if (backgroundFrame) {
+                    canvas.bringToFront(sticker);
+                }
                 canvas.renderAll();
                 showStatus('自定义图案已添加！可以拖拽调整');
                 document.getElementById('customStickerUrl').value = '';
@@ -556,6 +586,10 @@
             });
             
             canvas.add(textbox);
+            // 确保文字框在相框之上
+            if (backgroundFrame) {
+                canvas.bringToFront(textbox);
+            }
             canvas.renderAll();
             showStatus('文字框已添加！可以拖拽调整大小和位置');
         }
@@ -563,7 +597,7 @@
         // 图层控制
         function bringForward() {
             const activeObject = canvas.getActiveObject();
-            if (activeObject) {
+            if (activeObject && activeObject !== backgroundFrame) {
                 canvas.bringForward(activeObject);
                 showStatus('元素已上移一层');
             }
@@ -571,21 +605,27 @@
 
         function sendBackward() {
             const activeObject = canvas.getActiveObject();
-            if (activeObject) {
+            if (activeObject && activeObject !== backgroundFrame) {
                 canvas.sendBackwards(activeObject);
-                showStatus('元素已下移一层');
+                // 确保不会移到相框下面
+                if (backgroundFrame && canvas.getObjects().indexOf(activeObject) <= canvas.getObjects().indexOf(backgroundFrame)) {
+                    canvas.bringForward(activeObject);
+                    showStatus('元素不能移到相框底板下方');
+                } else {
+                    showStatus('元素已下移一层');
+                }
             }
         }
 
-        // 清除所有元素
+        // 清除所有元素（保留相框）
         function clearAll() {
-            canvas.clear();
-            selectedFrame = null;
-            currentFrameType = null;
-            document.querySelectorAll('.frame-item').forEach(item => {
-                item.classList.remove('active');
+            const objects = canvas.getObjects();
+            objects.forEach(obj => {
+                if (obj !== backgroundFrame) {
+                    canvas.remove(obj);
+                }
             });
-            showStatus('已清除所有内容');
+            showStatus('已清除所有内容（相框保留）');
         }
 
         // 下载图片
@@ -611,7 +651,7 @@
         }
 
         // 初始提示
-        showStatus('请先选择相框，然后上传Zoom截图');
+        showStatus('请先选择相框作为底板，然后上传Zoom截图');
     </script>
 </body>
 </html>
