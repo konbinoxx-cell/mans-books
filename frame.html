@@ -2,131 +2,430 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>读书会图片编辑器</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
-    <script src="https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.8;
+        }
+        
+        .content {
+            display: flex;
+            min-height: 600px;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-right: 1px solid #e9ecef;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            background: #eef2ff;
+            border-color: #764ba2;
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+        }
+        
+        .control-group h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: all 0.3s;
+            width: calc(100% - 10px);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .canvas-container {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        #canvas {
+            background: #f8f9fa;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+        
+        .status-message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <div id="app">
-        <h1>📚 读书会图片编辑器</h1>
-        
-        <!-- 文件上传 -->
-        <input type="file" id="imageUpload" accept="image/*">
-        
-        <!-- 编辑区域 -->
-        <div>
-            <canvas id="canvas" width="800" height="600"></canvas>
+    <div class="container">
+        <div class="header">
+            <h1>📚 读书会图片编辑器</h1>
+            <p>为Zoom截图添加相框、手势图案和文字框</p>
         </div>
         
-        <!-- 控制面板 -->
-        <div>
-            <button onclick="addFrame()">添加相框</button>
-            <button onclick="addSticker()">添加手势图案</button>
-            <button onclick="addTextBox()">添加文字框</button>
-            <button onclick="saveToGoogleDrive()">保存到Google Drive</button>
+        <div class="content">
+            <!-- 左侧控制面板 -->
+            <div class="sidebar">
+                <div class="upload-area" onclick="document.getElementById('imageUpload').click()">
+                    <h3>📁 上传Zoom截图</h3>
+                    <p>点击或拖拽图片到这里</p>
+                    <input type="file" id="imageUpload" accept="image/*" class="hidden">
+                </div>
+                
+                <div class="control-group">
+                    <h3>🎨 相框设置</h3>
+                    <button class="btn" onclick="addFrame('christmas')">🎄 圣诞主题</button>
+                    <button class="btn" onclick="addFrame('easter')">🐰 复活节主题</button>
+                    <button class="btn" onclick="addFrame('chinese_new_year')">🏮 春节主题</button>
+                    <button class="btn" onclick="addFrame('thanksgiving')">🦃 感恩节主题</button>
+                    <button class="btn" onclick="addFrame('general')">🌟 通用相框</button>
+                </div>
+                
+                <div class="control-group">
+                    <h3>👐 手势图案</h3>
+                    <button class="btn" onclick="addSticker('praise')">🙌 赞美手势</button>
+                    <button class="btn" onclick="addSticker('prayer')">🙏 祈祷手势</button>
+                    <button class="btn" onclick="addSticker('celebration')">🎉 庆祝手势</button>
+                    <button class="btn" onclick="addSticker('blessing')">✝️ 祝福手势</button>
+                </div>
+                
+                <div class="control-group">
+                    <h3>📝 文字框</h3>
+                    <button class="btn" onclick="addTextBox()">添加文字框</button>
+                    <button class="btn btn-secondary" onclick="clearAll()">清除所有元素</button>
+                </div>
+            </div>
+            
+            <!-- 右侧主内容区 -->
+            <div class="main-content">
+                <div class="canvas-container">
+                    <canvas id="canvas" width="800" height="500"></canvas>
+                </div>
+                
+                <div id="statusMessage" class="status-message hidden"></div>
+                
+                <button class="download-btn" onclick="downloadImage()">
+                    💾 下载图片
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
         // 初始化Fabric.js画布
-        const canvas = new fabric.Canvas('canvas');
-        let currentImage = null;
+        const canvas = new fabric.Canvas('canvas', {
+            backgroundColor: '#f8f9fa'
+        });
+        
+        let originalImage = null;
+        const IMAGE_POSITION = { left: 50, top: 80 }; // 固定图片位置，为相框留出空间
 
-        // 上传图片
+        // 显示状态消息
+        function showStatus(message, type = 'success') {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message ${type}`;
+            statusEl.classList.remove('hidden');
+            
+            setTimeout(() => {
+                statusEl.classList.add('hidden');
+            }, 3000);
+        }
+
+        // 上传图片处理
         document.getElementById('imageUpload').addEventListener('change', function(e) {
             const file = e.target.files[0];
-            const reader = new FileReader();
+            if (!file) return;
             
+            const reader = new FileReader();
             reader.onload = function(f) {
                 fabric.Image.fromURL(f.target.result, function(img) {
                     canvas.clear();
+                    
+                    // 设置图片位置（固定位置）
+                    img.set({
+                        left: IMAGE_POSITION.left,
+                        top: IMAGE_POSITION.top,
+                        selectable: true,
+                        hasControls: true
+                    });
+                    
                     canvas.add(img);
-                    currentImage = img;
+                    originalImage = img;
                     canvas.renderAll();
+                    
+                    showStatus('图片上传成功！现在可以添加相框和图案了。');
                 });
             };
             reader.readAsDataURL(file);
         });
 
-        // 添加相框
-        async function addFrame() {
-            const occasion = prompt('请输入节日（如：圣诞、春节、感恩节）:');
-            const frameUrl = await searchFrame(occasion);
-            
-            fabric.Image.fromURL(frameUrl, function(frame) {
-                frame.set({
-                    left: 0,
-                    top: 0,
-                    selectable: false
-                });
-                canvas.add(frame);
-                canvas.renderAll();
-            });
-        }
+        // 预定义的相框和图案资源（使用在线资源）
+        const resources = {
+            frames: {
+                christmas: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&h=600&fit=crop&auto=format',
+                easter: 'https://images.unsplash.com/photo-1618519764620-7403abdbdfe9?w=800&h=600&fit=crop&auto=format',
+                chinese_new_year: 'https://images.unsplash.com/photo-1547981609-4b6bf67b7d12?w=800&h=600&fit=crop&auto=format',
+                thanksgiving: 'https://images.unsplash.com/photo-1633177314669-66f37c6d1cc1?w=800&h=600&fit=crop&auto=format',
+                general: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=800&h=600&fit=crop&auto=format'
+            },
+            stickers: {
+                praise: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=200&h=200&fit=crop&auto=format',
+                prayer: 'https://images.unsplash.com/photo-1424746219973-8fe3bd07d8e3?w=200&h=200&fit=crop&auto=format',
+                celebration: 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=200&h=200&fit=crop&auto=format',
+                blessing: 'https://images.unsplash.com/photo-1518481852452-9415bceeba4d?w=200&h=200&fit=crop&auto=format'
+            }
+        };
 
-        // 搜索相框素材
-        async function searchFrame(occasion) {
-            // 使用免费的图片API
-            const response = await fetch(`https://api.unsplash.com/search/photos?query=${occasion}+frame&client_id=YOUR_UNSPLASH_KEY`);
-            const data = await response.json();
-            return data.results[0].urls.regular;
+        // 添加相框
+        async function addFrame(frameType) {
+            if (!originalImage) {
+                showStatus('请先上传图片！', 'error');
+                return;
+            }
+            
+            showStatus('正在添加相框...');
+            
+            try {
+                const frameUrl = resources.frames[frameType] || resources.frames.general;
+                
+                fabric.Image.fromURL(frameUrl, function(frame) {
+                    // 设置相框覆盖整个画布
+                    frame.set({
+                        left: 0,
+                        top: 0,
+                        width: canvas.width,
+                        height: canvas.height,
+                        selectable: false,
+                        evented: false,
+                        opacity: 0.7
+                    });
+                    
+                    canvas.add(frame);
+                    canvas.sendToBack(frame); // 将相框放到最底层
+                    canvas.renderAll();
+                    
+                    showStatus('相框添加成功！');
+                });
+            } catch (error) {
+                showStatus('相框添加失败，请重试', 'error');
+                console.error('Frame error:', error);
+            }
         }
 
         // 添加手势图案
-        async function addSticker() {
-            const gestureType = prompt('手势类型（赞美、祈祷、庆祝）:');
-            const stickerUrl = await searchSticker(gestureType);
+        async function addSticker(stickerType) {
+            if (!originalImage) {
+                showStatus('请先上传图片！', 'error');
+                return;
+            }
             
-            fabric.Image.fromURL(stickerUrl, function(sticker) {
-                sticker.set({
-                    left: 100,
-                    top: 100,
-                    scaleX: 0.3,
-                    scaleY: 0.3
+            showStatus('正在添加手势图案...');
+            
+            try {
+                const stickerUrl = resources.stickers[stickerType] || resources.stickers.praise;
+                
+                fabric.Image.fromURL(stickerUrl, function(sticker) {
+                    // 设置图案位置和大小
+                    sticker.set({
+                        left: 600, // 右侧位置
+                        top: 400,  // 底部位置
+                        scaleX: 0.15,
+                        scaleY: 0.15,
+                        cornerStyle: 'circle',
+                        transparentCorners: false
+                    });
+                    
+                    canvas.add(sticker);
+                    canvas.renderAll();
+                    
+                    showStatus('手势图案添加成功！');
                 });
-                canvas.add(sticker);
-                canvas.renderAll();
-            });
+            } catch (error) {
+                showStatus('图案添加失败，请重试', 'error');
+                console.error('Sticker error:', error);
+            }
         }
 
-        // 添加自适应文字框
+        // 添加文字框
         function addTextBox() {
-            const text = prompt('请输入文字内容:');
+            if (!originalImage) {
+                showStatus('请先上传图片！', 'error');
+                return;
+            }
             
-            const textbox = new fabric.Textbox(text, {
-                left: 50,
+            const textContent = prompt('请输入文字内容:', '欢迎参加读书会分享');
+            if (!textContent) return;
+            
+            const textbox = new fabric.Textbox(textContent, {
+                left: 100,
                 top: 50,
-                width: 200,
-                fontSize: 20,
-                fill: '#000000',
-                backgroundColor: 'rgba(255,255,255,0.8)',
-                editable: true
+                width: 300,
+                fontSize: 24,
+                fill: '#2c3e50',
+                fontFamily: 'Microsoft YaHei',
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                padding: 10,
+                borderColor: '#667eea',
+                cornerColor: '#667eea',
+                cornerStyle: 'circle',
+                transparentCorners: false
             });
             
             canvas.add(textbox);
             canvas.renderAll();
+            showStatus('文字框添加成功！可以拖动调整位置');
         }
 
-        // 保存到Google Drive
-        async function saveToGoogleDrive() {
+        // 清除所有添加的元素
+        function clearAll() {
+            if (!originalImage) {
+                showStatus('没有可清除的内容', 'error');
+                return;
+            }
+            
+            canvas.clear();
+            canvas.add(originalImage);
+            canvas.renderAll();
+            showStatus('已清除所有添加的元素');
+        }
+
+        // 下载图片
+        function downloadImage() {
+            if (!originalImage) {
+                showStatus('请先上传图片！', 'error');
+                return;
+            }
+            
             const dataURL = canvas.toDataURL({
                 format: 'png',
                 quality: 1
             });
             
-            // 使用Google Picker API
-            await saveToDrive(dataURL);
+            const link = document.createElement('a');
+            link.download = `读书会图片_${new Date().getTime()}.png`;
+            link.href = dataURL;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showStatus('图片下载成功！');
         }
 
-        // 使用Google Picker API保存
-        function saveToDrive(dataURL) {
-            // 这里需要配置Google API
-            // 或者提供下载链接，让用户手动保存到Drive
-            const link = document.createElement('a');
-            link.download = '读书会图片.png';
-            link.href = dataURL;
-            link.click();
-        }
+        // 初始提示
+        showStatus('请上传Zoom截图开始编辑');
     </script>
 </body>
 </html>
