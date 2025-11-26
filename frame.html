@@ -14,277 +14,158 @@
         
         body {
             font-family: 'Microsoft YaHei', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f5f5;
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px;
         }
         
         .container {
-            max-width: 1400px;
+            max-width: 1000px;
             margin: 0 auto;
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             overflow: hidden;
         }
         
         .header {
             background: #2c3e50;
             color: white;
-            padding: 20px;
+            padding: 10px 15px;
             text-align: center;
         }
         
         .header h1 {
-            font-size: 2.2em;
-            margin-bottom: 10px;
+            font-size: 1.5em;
+            margin-bottom: 5px;
         }
         
         .content {
             display: flex;
-            min-height: 700px;
+            min-height: 500px;
         }
         
         .sidebar {
-            width: 350px;
+            width: 180px;
             background: #f8f9fa;
-            padding: 20px;
-            border-right: 1px solid #e9ecef;
-            overflow-y: auto;
+            padding: 15px;
+            border-right: 1px solid #e0e0e0;
         }
         
         .main-content {
             flex: 1;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-        }
-        
-        .upload-area {
-            border: 2px dashed #667eea;
-            border-radius: 10px;
-            padding: 30px;
-            text-align: center;
-            margin-bottom: 20px;
-            background: #f8f9ff;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .upload-area:hover {
-            background: #eef2ff;
-            border-color: #764ba2;
         }
         
         .control-group {
-            margin-bottom: 25px;
+            margin-bottom: 15px;
         }
         
         .control-group h3 {
             color: #2c3e50;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
+            font-size: 1em;
+            border-bottom: 1px solid #3498db;
             padding-bottom: 5px;
-            border-bottom: 2px solid #667eea;
+        }
+        
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
         }
         
         .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            flex: 1;
+            background: #3498db;
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
+            padding: 8px 12px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
-            margin: 5px;
-            transition: all 0.3s;
-            width: calc(100% - 10px);
+            font-size: 13px;
+            text-align: center;
         }
         
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: #2980b9;
         }
         
         .btn-success {
-            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            background: #27ae60;
         }
         
-        .btn-info {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        .btn-success:hover {
+            background: #219a52;
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        .text-input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .text-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .color-label {
+            font-size: 12px;
+            color: #666;
+            min-width: 40px;
+        }
+        
+        .color-picker {
+            width: 30px;
+            height: 20px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            cursor: pointer;
         }
         
         .canvas-container {
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
+            border: 2px solid #bdc3c7;
+            border-radius: 6px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
             background: #f8f9fa;
-            min-height: 500px;
+            margin-bottom: 15px;
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
         }
         
         #canvas {
             background: white;
         }
         
-        .paste-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            color: white;
-            z-index: 1000;
-        }
-        
-        .paste-overlay.hidden {
-            display: none;
-        }
-        
-        .frame-preview {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .frame-item {
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            padding: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-        }
-        
-        .frame-item:hover {
-            border-color: #667eea;
-            transform: scale(1.05);
-        }
-        
-        .frame-item.active {
-            border-color: #667eea;
-            background: #eef2ff;
-        }
-        
-        .frame-item img {
-            width: 100%;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-        
-        .frame-item .frame-name {
-            font-size: 12px;
-            margin-top: 5px;
-            color: #666;
-        }
-        
-        .custom-frame-input {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .custom-frame-input input {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        
-        .custom-frame-input button {
-            padding: 8px 15px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        
-        .sticker-position-controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 5px;
-            margin-top: 10px;
-        }
-        
-        .sticker-position-controls button {
-            padding: 8px;
-            background: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        
-        .sticker-position-controls button:hover {
-            background: #5a6268;
-        }
-        
-        .text-style-controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 5px;
-            margin-top: 10px;
-        }
-        
-        .text-style-controls button {
-            padding: 8px;
-            background: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        
-        .text-style-controls button:hover {
-            background: #5a6268;
-        }
-        
-        .color-picker {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .color-picker label {
-            font-size: 12px;
-            color: #666;
-        }
-        
-        .color-picker input {
-            width: 40px;
-            height: 30px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        
         .status-message {
             margin-top: 10px;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 6px;
+            border-radius: 3px;
             text-align: center;
-            font-size: 14px;
+            font-size: 12px;
         }
         
         .success {
@@ -303,145 +184,74 @@
             display: none;
         }
         
-        .instruction {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-            text-align: center;
-        }
-        
-        .lock-icon {
-            color: #28a745;
-            font-size: 14px;
-            margin-left: 5px;
+        input[type="file"] {
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📚 读书会图片编辑器</h1>
-            <p>为Zoom截图添加相框、手势图案和文字框 - 下载功能已修复</p>
+            <h1>读书会图片编辑器</h1>
         </div>
         
         <div class="content">
-            <!-- 左侧控制面板 -->
+            <!-- 左侧精简面板 -->
             <div class="sidebar">
-                <div class="upload-area" onclick="document.getElementById('imageUpload').click()">
-                    <h3>📁 上传Zoom截图</h3>
-                    <p>点击或拖拽图片到这里</p>
-                    <input type="file" id="imageUpload" accept="image/*" class="hidden">
+                <!-- 背景设置 -->
+                <div class="control-group">
+                    <h3>背景设置</h3>
+                    <div class="btn-row">
+                        <button class="btn" onclick="document.getElementById('bgUpload').click()">读盘</button>
+                        <button class="btn" onclick="enablePasteMode()">粘贴</button>
+                    </div>
+                    <input type="file" id="bgUpload" accept="image/*">
                 </div>
                 
+                <!-- 手势设置 -->
                 <div class="control-group">
-                    <h3>🎨 背景设置 <span class="lock-icon">🔄 新背景覆盖旧背景</span></h3>
-                    <p class="instruction">三种方式设置背景：选择相框、粘贴图片、输入网址</p>
-                    
-                    <!-- 快速粘贴背景 -->
-                    <button class="btn btn-info" onclick="enablePasteMode()">📋 直接粘贴背景图片</button>
-                    
-                    <div class="frame-preview">
-                        <div class="frame-item" onclick="selectFrame('christmas')">
-                            <img src="https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=200&h=150&fit=crop&auto=format" alt="圣诞">
-                            <div class="frame-name">圣诞主题</div>
-                        </div>
-                        <div class="frame-item" onclick="selectFrame('easter')">
-                            <img src="https://images.unsplash.com/photo-1618519764620-7403abdbdfe9?w=200&h=150&fit=crop&auto=format" alt="复活节">
-                            <div class="frame-name">复活节主题</div>
-                        </div>
-                        <div class="frame-item" onclick="selectFrame('chinese_new_year')">
-                            <img src="https://images.unsplash.com/photo-1547981609-4b6bf67b7d12?w=200&h=150&fit=crop&auto=format" alt="春节">
-                            <div class="frame-name">春节主题</div>
-                        </div>
-                        <div class="frame-item" onclick="selectFrame('thanksgiving')">
-                            <img src="https://images.unsplash.com/photo-1633177314669-66f37c6d1cc1?w=200&h=150&fit=crop&auto=format" alt="感恩节">
-                            <div class="frame-name">感恩节主题</div>
-                        </div>
-                    </div>
-                    
-                    <div class="custom-frame-input">
-                        <input type="text" id="customFrameUrl" placeholder="粘贴背景图片网址...">
-                        <button onclick="addCustomFrame()">添加背景</button>
-                    </div>
-                    
-                    <button class="btn" onclick="applySelectedFrame()">应用选中背景</button>
-                    <button class="btn btn-secondary" onclick="removeFrame()">移除背景</button>
+                    <h3>手势设置</h3>
+                    <button class="btn" onclick="addSticker()">添加手势</button>
                 </div>
                 
+                <!-- 文字设置 -->
                 <div class="control-group">
-                    <h3>👐 手势图案</h3>
-                    <button class="btn" onclick="addSticker('praise', 'left')">🙌 左上角</button>
-                    <button class="btn" onclick="addSticker('praise', 'right')">🙌 右上角</button>
-                    <button class="btn" onclick="addSticker('prayer', 'left')">🙏 左上角</button>
-                    <button class="btn" onclick="addSticker('prayer', 'right')">🙏 右上角</button>
-                    
-                    <div class="sticker-position-controls">
-                        <button onclick="addSticker('celebration', 'left')">🎉 左上庆祝</button>
-                        <button onclick="addSticker('celebration', 'right')">🎉 右上庆祝</button>
-                        <button onclick="addSticker('blessing', 'left')">✝️ 左上祝福</button>
-                        <button onclick="addSticker('blessing', 'right')">✝️ 右上祝福</button>
+                    <h3>文字设置</h3>
+                    <input type="text" class="text-input" id="textInput" placeholder="输入文字内容" value="欢迎参加读书会">
+                    <div class="color-row">
+                        <span class="color-label">背景:</span>
+                        <input type="color" class="color-picker" id="textBgColor" value="#ffffff">
+                        <span class="color-label">文字:</span>
+                        <input type="color" class="color-picker" id="textColor" value="#2c3e50">
                     </div>
-                    
-                    <div class="custom-frame-input">
-                        <input type="text" id="customStickerUrl" placeholder="粘贴手势图片网址...">
-                        <button onclick="addCustomSticker()">添加手势</button>
-                    </div>
+                    <button class="btn" onclick="addTextBox()">提交文字</button>
                 </div>
                 
+                <!-- 工具 -->
                 <div class="control-group">
-                    <h3>📝 文字框</h3>
-                    <button class="btn" onclick="addTextBox()">添加底部文字框</button>
-                    
-                    <div class="color-picker">
-                        <label>背景色:</label>
-                        <input type="color" id="textBgColor" value="#ffffff">
-                        <label>文字色:</label>
-                        <input type="color" id="textColor" value="#2c3e50">
+                    <h3>工具</h3>
+                    <div class="btn-row">
+                        <button class="btn btn-secondary" onclick="clearAll()">清理</button>
+                        <button class="btn btn-success" onclick="downloadImage()">下载</button>
                     </div>
-                    
-                    <div class="text-style-controls">
-                        <button onclick="changeTextBackground()">应用背景色</button>
-                        <button onclick="changeTextColor()">应用文字色</button>
-                        <button onclick="bringForward()">上移一层</button>
-                        <button onclick="sendBackward()">下移一层</button>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <h3>🛠️ 工具</h3>
-                    <button class="btn btn-secondary" onclick="clearAll()">清除所有元素</button>
-                    <button class="btn btn-success" onclick="downloadImage()">💾 下载图片（已修复）</button>
                 </div>
             </div>
             
-            <!-- 右侧主内容区 -->
+            <!-- 右侧主画布 -->
             <div class="main-content">
                 <div class="canvas-container">
                     <canvas id="canvas" width="800" height="500"></canvas>
-                    <div id="pasteOverlay" class="paste-overlay hidden">
-                        <h2>📋 粘贴模式已激活</h2>
-                        <p>请按 Ctrl+V 粘贴图片作为背景</p>
-                        <p>图片将自动调整到画布大小</p>
-                        <button class="btn" onclick="disablePasteMode()" style="margin-top: 20px;">取消粘贴</button>
-                    </div>
                 </div>
-                
-                <div class="instruction">
-                    💡 提示：支持重复上传Zoom图片，下载功能已彻底修复
-                </div>
-                
                 <div id="statusMessage" class="status-message hidden"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // 初始化Fabric.js画布
+        // 初始化画布
         const canvas = new fabric.Canvas('canvas');
         let backgroundFrame = null;
-        let currentFrameType = null;
         let currentTextbox = null;
-        let currentZoomImage = null;
         let pasteMode = false;
 
         // 显示状态消息
@@ -450,269 +260,78 @@
             statusEl.textContent = message;
             statusEl.className = `status-message ${type}`;
             statusEl.classList.remove('hidden');
-            
-            setTimeout(() => {
-                statusEl.classList.add('hidden');
-            }, 3000);
+            setTimeout(() => statusEl.classList.add('hidden'), 3000);
         }
 
         // 启用粘贴模式
         function enablePasteMode() {
             pasteMode = true;
-            document.getElementById('pasteOverlay').classList.remove('hidden');
-            showStatus('粘贴模式已激活！请按 Ctrl+V 粘贴图片作为背景');
-        }
-
-        // 禁用粘贴模式
-        function disablePasteMode() {
-            pasteMode = false;
-            document.getElementById('pasteOverlay').classList.add('hidden');
-            showStatus('粘贴模式已关闭');
+            showStatus('请按 Ctrl+V 粘贴背景图片');
         }
 
         // 监听粘贴事件
         document.addEventListener('paste', function(e) {
             if (!pasteMode) return;
-            
             e.preventDefault();
-            disablePasteMode();
+            pasteMode = false;
             
             const items = e.clipboardData.items;
             for (let i = 0; i < items.length; i++) {
                 if (items[i].type.indexOf('image') !== -1) {
                     const blob = items[i].getAsFile();
                     const reader = new FileReader();
-                    
                     reader.onload = function(event) {
-                        // 使用粘贴的图片作为背景
-                        fabric.Image.fromURL(event.target.result, function(img) {
-                            // 自动移除之前的背景
-                            if (backgroundFrame) {
-                                canvas.remove(backgroundFrame);
-                            }
-                            
-                            // 计算缩放比例以适应画布
-                            const scaleX = canvas.width / img.width;
-                            const scaleY = canvas.height / img.height;
-                            const scale = Math.max(scaleX, scaleY);
-                            
-                            img.set({
-                                left: 0,
-                                top: 0,
-                                scaleX: scale,
-                                scaleY: scale,
-                                selectable: false,
-                                hasControls: false,
-                                hasBorders: false,
-                                evented: false,
-                                lockMovementX: true,
-                                lockMovementY: true,
-                                lockRotation: true,
-                                lockScalingX: true,
-                                lockScalingY: true,
-                                originX: 'left',
-                                originY: 'top'
-                            });
-                            
-                            canvas.add(img);
-                            canvas.sendToBack(img);
-                            backgroundFrame = img;
-                            canvas.renderAll();
-                            
-                            showStatus('背景图片粘贴成功！已自动调整到画布大小');
-                        });
+                        loadBackground(event.target.result);
                     };
-                    
                     reader.readAsDataURL(blob);
                     break;
                 }
             }
         });
 
-        // 选择相框
-        function selectFrame(frameType) {
-            // 移除之前的选择
-            document.querySelectorAll('.frame-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // 添加当前选择
-            event.target.closest('.frame-item').classList.add('active');
-            currentFrameType = frameType;
-            showStatus(`已选择 ${frameType} 背景，点击"应用背景"按钮替换当前背景`);
-        }
-
-        // 应用选中的背景（自动覆盖旧的）
-        function applySelectedFrame() {
-            if (!currentFrameType) {
-                showStatus('请先选择一个背景！', 'error');
-                return;
-            }
-            
-            const frameUrls = {
-                christmas: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&h=600&fit=crop&auto=format',
-                easter: 'https://images.unsplash.com/photo-1618519764620-7403abdbdfe9?w=800&h=600&fit=crop&auto=format',
-                chinese_new_year: 'https://images.unsplash.com/photo-1547981609-4b6bf67b7d12?w=800&h=600&fit=crop&auto=format',
-                thanksgiving: 'https://images.unsplash.com/photo-1633177314669-66f37c6d1cc1?w=800&h=600&fit=crop&auto=format'
+        // 上传背景
+        document.getElementById('bgUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(f) {
+                loadBackground(f.target.result);
             };
-            
-            loadFrame(frameUrls[currentFrameType]);
-        }
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        });
 
-        // 加载背景（自动移除旧的）
-        function loadFrame(frameUrl) {
-            showStatus('正在加载新背景，替换旧背景...');
-            
-            fabric.Image.fromURL(frameUrl, function(newFrame) {
-                // 自动移除之前的背景
-                if (backgroundFrame) {
-                    canvas.remove(backgroundFrame);
-                }
+        // 加载背景
+        function loadBackground(imageData) {
+            fabric.Image.fromURL(imageData, function(newFrame) {
+                if (backgroundFrame) canvas.remove(backgroundFrame);
                 
-                // 设置新背景
                 const scaleX = canvas.width / newFrame.width;
                 const scaleY = canvas.height / newFrame.height;
                 const scale = Math.max(scaleX, scaleY);
                 
                 newFrame.set({
-                    left: 0,
-                    top: 0,
-                    scaleX: scale,
-                    scaleY: scale,
-                    selectable: false,
-                    hasControls: false,
-                    hasBorders: false,
-                    evented: false,
-                    lockMovementX: true,
-                    lockMovementY: true,
-                    lockRotation: true,
-                    lockScalingX: true,
-                    lockScalingY: true,
-                    originX: 'left',
-                    originY: 'top'
+                    left: 0, top: 0, scaleX: scale, scaleY: scale,
+                    selectable: false, hasControls: false, evented: false,
+                    lockMovementX: true, lockMovementY: true
                 });
                 
                 canvas.add(newFrame);
                 canvas.sendToBack(newFrame);
                 backgroundFrame = newFrame;
                 canvas.renderAll();
-                
-                showStatus('新背景已替换旧背景！');
-            }, null, { crossOrigin: 'anonymous' });
+                showStatus('背景设置成功！');
+            });
         }
 
-        // 添加自定义背景（自动覆盖旧的）
-        function addCustomFrame() {
-            const frameUrl = document.getElementById('customFrameUrl').value.trim();
-            if (!frameUrl) {
-                showStatus('请输入图片网址！', 'error');
-                return;
-            }
-            
-            loadFrame(frameUrl);
-            document.getElementById('customFrameUrl').value = '';
-        }
-
-        // 移除背景
-        function removeFrame() {
-            if (backgroundFrame) {
-                canvas.remove(backgroundFrame);
-                backgroundFrame = null;
-                showStatus('背景已移除');
-            } else {
-                showStatus('没有背景可移除', 'error');
-            }
-        }
-
-        // 修复：Zoom图片重复上传功能
-        document.getElementById('imageUpload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(f) {
-                // 移除之前的Zoom图片
-                if (currentZoomImage) {
-                    canvas.remove(currentZoomImage);
-                }
-                
-                fabric.Image.fromURL(f.target.result, function(img) {
-                    // 设置图片初始大小和位置
-                    const scale = Math.min(600 / img.width, 400 / img.height) * 0.8;
-                    
-                    img.set({
-                        left: canvas.width / 2 - (img.width * scale) / 2,
-                        top: canvas.height / 2 - (img.height * scale) / 2,
-                        scaleX: scale,
-                        scaleY: scale,
-                        selectable: true,
-                        hasControls: true,
-                        cornerStyle: 'circle',
-                        transparentCorners: false,
-                        lockUniScaling: false
-                    });
-                    
-                    canvas.add(img);
-                    currentZoomImage = img;
-                    canvas.renderAll();
-                    
-                    showStatus('Zoom图片上传成功！可以拖拽调整大小和位置');
-                });
-            };
-            reader.readAsDataURL(file);
-            
-            // 清空input，允许重复选择同一文件
-            e.target.value = '';
-        });
-
-        // 预定义的手势图案
-        const stickerUrls = {
-            praise: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=200&h=200&fit=crop&auto=format',
-            prayer: 'https://images.unsplash.com/photo-1424746219973-8fe3bd07d8e3?w=200&h=200&fit=crop&auto=format',
-            celebration: 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=200&h=200&fit=crop&auto=format',
-            blessing: 'https://images.unsplash.com/photo-1518481852452-9415bceeba4d?w=200&h=200&fit=crop&auto=format'
-        };
-
-        // 添加手势图案（放在左上或右上角）
-        function addSticker(stickerType, position = 'left') {
-            const stickerUrl = stickerUrls[stickerType];
-            if (!stickerUrl) return;
-            
-            fabric.Image.fromURL(stickerUrl, function(sticker) {
-                // 设置位置：左上角或右上角
-                const left = position === 'left' ? 50 : canvas.width - 150;
-                const top = 50;
-                
-                sticker.set({
-                    left: left,
-                    top: top,
-                    scaleX: 0.15,
-                    scaleY: 0.15,
-                    selectable: true,
-                    hasControls: true,
-                    cornerStyle: 'circle',
-                    transparentCorners: false,
-                    lockUniScaling: false
-                });
-                
-                canvas.add(sticker);
-                canvas.renderAll();
-                showStatus(`手势图案已添加到${position === 'left' ? '左上角' : '右上角'}！`);
-            }, null, { crossOrigin: 'anonymous' });
-        }
-
-        // 添加自定义手势
-        function addCustomSticker() {
-            const stickerUrl = document.getElementById('customStickerUrl').value.trim();
-            if (!stickerUrl) {
-                showStatus('请输入图片网址！', 'error');
-                return;
-            }
+        // 添加手势 - 绝对左上角
+        function addSticker() {
+            const stickerUrl = 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=200&h=200&fit=crop&auto=format';
             
             fabric.Image.fromURL(stickerUrl, function(sticker) {
                 sticker.set({
-                    left: 50,
-                    top: 50,
+                    left: 20,  // 绝对左上角
+                    top: 20,   // 绝对左上角
                     scaleX: 0.15,
                     scaleY: 0.15,
                     selectable: true,
@@ -723,32 +342,31 @@
                 
                 canvas.add(sticker);
                 canvas.renderAll();
-                showStatus('自定义图案已添加到左上角！');
-                document.getElementById('customStickerUrl').value = '';
+                showStatus('手势已添加到左上角，可拖拽移动');
             }, null, { crossOrigin: 'anonymous' });
         }
 
-        // 添加文字框（放在底部）
+        // 添加文字框
         function addTextBox() {
-            const textContent = prompt('请输入文字内容:', '欢迎参加读书会分享');
-            if (!textContent) return;
-            
-            // 移除之前的文字框
-            if (currentTextbox) {
-                canvas.remove(currentTextbox);
+            const textContent = document.getElementById('textInput').value.trim();
+            if (!textContent) {
+                showStatus('请输入文字内容', 'error');
+                return;
             }
+            
+            if (currentTextbox) canvas.remove(currentTextbox);
             
             const textbox = new fabric.Textbox(textContent, {
                 left: canvas.width / 2 - 150,
-                top: canvas.height - 100, // 底部位置
+                top: canvas.height - 100,
                 width: 300,
                 fontSize: 24,
                 fill: document.getElementById('textColor').value,
                 fontFamily: 'Microsoft YaHei',
                 backgroundColor: document.getElementById('textBgColor').value,
                 padding: 15,
-                borderColor: '#667eea',
-                cornerColor: '#667eea',
+                borderColor: '#3498db',
+                cornerColor: '#3498db',
                 cornerStyle: 'circle',
                 transparentCorners: false,
                 selectable: true,
@@ -759,51 +377,10 @@
             canvas.add(textbox);
             currentTextbox = textbox;
             canvas.renderAll();
-            showStatus('文字框已添加到底部！可以调整颜色和位置');
+            showStatus('文字框已添加！');
         }
 
-        // 修改文字背景色
-        function changeTextBackground() {
-            if (currentTextbox) {
-                const color = document.getElementById('textBgColor').value;
-                currentTextbox.set('backgroundColor', color);
-                canvas.renderAll();
-                showStatus('文字背景色已更新！');
-            } else {
-                showStatus('请先添加文字框！', 'error');
-            }
-        }
-
-        // 修改文字颜色
-        function changeTextColor() {
-            if (currentTextbox) {
-                const color = document.getElementById('textColor').value;
-                currentTextbox.set('fill', color);
-                canvas.renderAll();
-                showStatus('文字颜色已更新！');
-            } else {
-                showStatus('请先添加文字框！', 'error');
-            }
-        }
-
-        // 图层控制
-        function bringForward() {
-            const activeObject = canvas.getActiveObject();
-            if (activeObject && activeObject !== backgroundFrame) {
-                canvas.bringForward(activeObject);
-                showStatus('元素已上移一层');
-            }
-        }
-
-        function sendBackward() {
-            const activeObject = canvas.getActiveObject();
-            if (activeObject && activeObject !== backgroundFrame) {
-                canvas.sendBackwards(activeObject);
-                showStatus('元素已下移一层');
-            }
-        }
-
-        // 修复清除功能
+        // 清理功能
         function clearAll() {
             const objects = canvas.getObjects();
             objects.forEach(obj => {
@@ -812,70 +389,35 @@
                 }
             });
             currentTextbox = null;
-            currentZoomImage = null;
-            showStatus('已清除所有内容（背景保留）');
+            showStatus('已清理所有元素');
         }
 
-        // 修复的下载功能 - 先合成再下载
+        // 下载功能
         function downloadImage() {
             try {
                 if (canvas.getObjects().length === 0) {
-                    showStatus('画布为空，请先添加内容！', 'error');
+                    showStatus('画布为空，无法下载', 'error');
                     return;
                 }
                 
-                showStatus('正在合成图片...');
+                showStatus('正在生成图片...');
+                const dataURL = canvas.toDataURL({ format: 'png', quality: 1 });
                 
-                // 步骤1：创建一个离屏canvas作为合成画布
-                const compositeCanvas = document.createElement('canvas');
-                compositeCanvas.width = canvas.width;
-                compositeCanvas.height = canvas.height;
-                const compositeCtx = compositeCanvas.getContext('2d');
+                const link = document.createElement('a');
+                link.download = `读书会图片_${Date.now()}.png`;
+                link.href = dataURL;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
                 
-                // 步骤2：填充白色背景（确保透明区域显示为白色）
-                compositeCtx.fillStyle = '#ffffff';
-                compositeCtx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height);
-                
-                // 步骤3：将fabric画布导出为图片数据（这一步会处理所有对象的渲染）
-                const canvasDataURL = canvas.toDataURL({
-                    format: 'png',
-                    quality: 1
-                });
-                
-                // 步骤4：将导出的图片数据绘制到合成画布上
-                const finalImage = new Image();
-                finalImage.onload = function() {
-                    // 在合成画布上绘制完整的图片
-                    compositeCtx.drawImage(finalImage, 0, 0);
-                    
-                    // 步骤5：从合成画布下载最终图片
-                    const finalDataURL = compositeCanvas.toDataURL('image/png');
-                    
-                    // 触发下载
-                    const link = document.createElement('a');
-                    link.download = `读书会图片_${Date.now()}.png`;
-                    link.href = finalDataURL;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    
-                    showStatus('✅ 下载成功！所有元素已合成完整图片');
-                };
-                
-                finalImage.onerror = function() {
-                    showStatus('❌ 图片合成失败，请重试', 'error');
-                };
-                
-                finalImage.src = canvasDataURL;
-                
+                showStatus('✅ 下载成功！');
             } catch (error) {
-                console.error('下载错误:', error);
-                showStatus('❌ 下载失败：' + error.message, 'error');
+                showStatus('❌ 下载失败，请重试', 'error');
             }
         }
 
         // 初始提示
-        showStatus('请先设置背景，然后上传Zoom截图');
+        showStatus('欢迎使用！请先设置背景');
     </script>
 </body>
 </html>
