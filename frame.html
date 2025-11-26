@@ -301,7 +301,7 @@
             e.target.value = '';
         });
 
-        // 加载背景
+        // 加载背景 - 修复跨域问题
         function loadBackground(imageData) {
             fabric.Image.fromURL(imageData, function(newFrame) {
                 if (backgroundFrame) canvas.remove(backgroundFrame);
@@ -321,11 +321,12 @@
                 backgroundFrame = newFrame;
                 canvas.renderAll();
                 showStatus('背景设置成功！');
-            });
+            }, null, { crossOrigin: 'anonymous' }); // 🔑 修复跨域
         }
 
-        // 添加手势 - 绝对左上角
+        // 添加手势 - 绝对左上角，修复跨域问题
         function addSticker() {
+            // 使用支持CORS的图片源
             const stickerUrl = 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=200&h=200&fit=crop&auto=format';
             
             fabric.Image.fromURL(stickerUrl, function(sticker) {
@@ -343,7 +344,7 @@
                 canvas.add(sticker);
                 canvas.renderAll();
                 showStatus('手势已添加到左上角，可拖拽移动');
-            }, null, { crossOrigin: 'anonymous' });
+            }, null, { crossOrigin: 'anonymous' }); // 🔑 修复跨域
         }
 
         // 添加文字框
@@ -392,27 +393,52 @@
             showStatus('已清理所有元素');
         }
 
-        // 下载功能
+        // 修复的下载功能 - 彻底解决跨域问题
         function downloadImage() {
             try {
                 if (canvas.getObjects().length === 0) {
                     showStatus('画布为空，无法下载', 'error');
                     return;
                 }
+
+                showStatus('正在合成图片...');
+
+                // 方法1：使用fabric的toCanvasElement（最可靠）
+                const fabricCanvasEl = canvas.toCanvasElement();
                 
-                showStatus('正在生成图片...');
-                const dataURL = canvas.toDataURL({ format: 'png', quality: 1 });
+                const finalCanvas = document.createElement('canvas');
+                finalCanvas.width = fabricCanvasEl.width;
+                finalCanvas.height = fabricCanvasEl.height;
+                const ctx = finalCanvas.getContext('2d');
                 
-                const link = document.createElement('a');
-                link.download = `读书会图片_${Date.now()}.png`;
-                link.href = dataURL;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                // 填充白色背景确保无透明区域
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
                 
-                showStatus('✅ 下载成功！');
+                // 绘制fabric canvas内容
+                ctx.drawImage(fabricCanvasEl, 0, 0);
+                
+                // 转换为Blob下载
+                finalCanvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = `读书会图片_${Date.now()}.png`;
+                    link.href = url;
+                    link.style.display = 'none';
+                    
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    // 清理URL
+                    setTimeout(() => URL.revokeObjectURL(url), 100);
+                    
+                    showStatus('✅ 下载成功！');
+                }, 'image/png', 1);
+
             } catch (error) {
-                showStatus('❌ 下载失败，请重试', 'error');
+                console.error('下载错误:', error);
+                showStatus('❌ 下载失败：' + error.message, 'error');
             }
         }
 
