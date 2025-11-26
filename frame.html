@@ -410,7 +410,7 @@
                 <div class="control-group">
                     <h3>🛠️ 工具</h3>
                     <button class="btn btn-secondary" onclick="clearAll()">清除所有元素</button>
-                    <button class="btn btn-success" onclick="downloadImage()">💾 下载图片</button>
+                    <button class="btn btn-success" onclick="downloadImage()">💾 下载图片（已修复）</button>
                 </div>
             </div>
             
@@ -805,29 +805,35 @@
             showStatus('已清除所有内容（背景保留）');
         }
 
-        // 下载功能
+        // 修复的下载功能
         function downloadImage() {
-            if (canvas.getObjects().length === 0) {
-                showStatus('画布为空，无法下载', 'error');
-                return;
+            try {
+                if (canvas.getObjects().length === 0) {
+                    showStatus('画布为空，请先添加内容！', 'error');
+                    return;
+                }
+                
+                showStatus('正在生成图片...');
+                
+                const dataURL = canvas.toDataURL({
+                    format: 'png',
+                    quality: 1
+                });
+                
+                const link = document.createElement('a');
+                link.download = `读书会图片_${Date.now()}.png`;
+                link.href = dataURL;
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showStatus('✅ 下载成功！图片已保存');
+                
+            } catch (error) {
+                console.error('下载错误:', error);
+                showStatus('❌ 下载失败，请重试', 'error');
             }
-            
-            const link = document.createElement('a');
-            link.download = `读书会图片_${new Date().getTime()}.png`;
-            
-            canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
-            const dataURL = canvas.toDataURL({
-                format: 'png',
-                quality: 1,
-                multiplier: 2
-            });
-            
-            link.href = dataURL;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            showStatus('图片下载成功！');
         }
 
         // 初始提示
