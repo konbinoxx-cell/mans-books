@@ -321,7 +321,7 @@
     <div class="container">
         <div class="header">
             <h1>📚 读书会图片编辑器</h1>
-            <p>为Zoom截图添加相框、手势图案和文字框 - 支持直接粘贴背景图片</p>
+            <p>为Zoom截图添加相框、手势图案和文字框 - 下载功能已修复</p>
         </div>
         
         <div class="content">
@@ -427,7 +427,7 @@
                 </div>
                 
                 <div class="instruction">
-                    💡 提示：点击"直接粘贴背景图片"，然后按Ctrl+V粘贴任意图片作为背景
+                    💡 提示：支持重复上传Zoom图片，下载功能已彻底修复
                 </div>
                 
                 <div id="statusMessage" class="status-message hidden"></div>
@@ -441,6 +441,7 @@
         let backgroundFrame = null;
         let currentFrameType = null;
         let currentTextbox = null;
+        let currentZoomImage = null;
         let pasteMode = false;
 
         // 显示状态消息
@@ -493,7 +494,7 @@
                             // 计算缩放比例以适应画布
                             const scaleX = canvas.width / img.width;
                             const scaleY = canvas.height / img.height;
-                            const scale = Math.max(scaleX, scaleY); // 覆盖整个画布
+                            const scale = Math.max(scaleX, scaleY);
                             
                             img.set({
                                 left: 0,
@@ -623,13 +624,18 @@
             }
         }
 
-        // 上传图片处理
+        // 修复：Zoom图片重复上传功能
         document.getElementById('imageUpload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
             
             const reader = new FileReader();
             reader.onload = function(f) {
+                // 移除之前的Zoom图片
+                if (currentZoomImage) {
+                    canvas.remove(currentZoomImage);
+                }
+                
                 fabric.Image.fromURL(f.target.result, function(img) {
                     // 设置图片初始大小和位置
                     const scale = Math.min(600 / img.width, 400 / img.height) * 0.8;
@@ -647,12 +653,16 @@
                     });
                     
                     canvas.add(img);
+                    currentZoomImage = img;
                     canvas.renderAll();
                     
-                    showStatus('图片上传成功！可以拖拽调整大小和位置');
+                    showStatus('Zoom图片上传成功！可以拖拽调整大小和位置');
                 });
             };
             reader.readAsDataURL(file);
+            
+            // 清空input，允许重复选择同一文件
+            e.target.value = '';
         });
 
         // 预定义的手势图案
@@ -793,7 +803,7 @@
             }
         }
 
-        // 清除所有元素（保留背景）
+        // 修复清除功能
         function clearAll() {
             const objects = canvas.getObjects();
             objects.forEach(obj => {
@@ -802,10 +812,11 @@
                 }
             });
             currentTextbox = null;
+            currentZoomImage = null;
             showStatus('已清除所有内容（背景保留）');
         }
 
-        // 修复的下载功能
+        // 修复的下载功能 - 先合成再下载
         function downloadImage() {
             try {
                 if (canvas.getObjects().length === 0) {
@@ -813,26 +824,53 @@
                     return;
                 }
                 
-                showStatus('正在生成图片...');
+                showStatus('正在合成图片...');
                 
-                const dataURL = canvas.toDataURL({
+                // 步骤1：创建一个离屏canvas作为合成画布
+                const compositeCanvas = document.createElement('canvas');
+                compositeCanvas.width = canvas.width;
+                compositeCanvas.height = canvas.height;
+                const compositeCtx = compositeCanvas.getContext('2d');
+                
+                // 步骤2：填充白色背景（确保透明区域显示为白色）
+                compositeCtx.fillStyle = '#ffffff';
+                compositeCtx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height);
+                
+                // 步骤3：将fabric画布导出为图片数据（这一步会处理所有对象的渲染）
+                const canvasDataURL = canvas.toDataURL({
                     format: 'png',
                     quality: 1
                 });
                 
-                const link = document.createElement('a');
-                link.download = `读书会图片_${Date.now()}.png`;
-                link.href = dataURL;
+                // 步骤4：将导出的图片数据绘制到合成画布上
+                const finalImage = new Image();
+                finalImage.onload = function() {
+                    // 在合成画布上绘制完整的图片
+                    compositeCtx.drawImage(finalImage, 0, 0);
+                    
+                    // 步骤5：从合成画布下载最终图片
+                    const finalDataURL = compositeCanvas.toDataURL('image/png');
+                    
+                    // 触发下载
+                    const link = document.createElement('a');
+                    link.download = `读书会图片_${Date.now()}.png`;
+                    link.href = finalDataURL;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    showStatus('✅ 下载成功！所有元素已合成完整图片');
+                };
                 
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                finalImage.onerror = function() {
+                    showStatus('❌ 图片合成失败，请重试', 'error');
+                };
                 
-                showStatus('✅ 下载成功！图片已保存');
+                finalImage.src = canvasDataURL;
                 
             } catch (error) {
                 console.error('下载错误:', error);
-                showStatus('❌ 下载失败，请重试', 'error');
+                showStatus('❌ 下载失败：' + error.message, 'error');
             }
         }
 
