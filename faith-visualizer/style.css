@@ -1,0 +1,26 @@
+body {
+  font-family: 'Microsoft YaHei', sans-serif;
+  background: #f9f7f0;
+  padding: 20px;
+}
+.container {
+  max-width: 1000px; margin: 0 auto; text-align: center;
+}
+.section-title {
+  margin: 15px 0 8px; font-weight: bold; color: #2c3e50;
+}
+#frameList, #iconList {
+  margin: 10px 0;
+}
+.frame-item, .icon-item {
+  width: 80px; height: 80px; margin: 5px;
+  border: 2px solid transparent; border-radius: 6px;
+  cursor: pointer;
+}
+.frame-item:hover, .icon-item:hover {
+  border-color: #3498db;
+}
+#canvas {
+  border: 1px dashed #ccc; background: white;
+  max-width: 100%; height: auto;
+}
