@@ -46,7 +46,7 @@
         }
         
         .sidebar {
-            width: 200px;
+            width: 180px;
             background: #f8f9fa;
             padding: 15px;
             border-right: 1px solid #e0e0e0;
@@ -152,15 +152,6 @@
             cursor: pointer;
         }
         
-        .theme-select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 13px;
-            margin-bottom: 8px;
-        }
-        
         .canvas-container {
             border: 2px solid #bdc3c7;
             border-radius: 6px;
@@ -171,7 +162,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
         }
         
         #canvas {
@@ -219,14 +209,6 @@
                 <!-- 背景设置 -->
                 <div class="control-group">
                     <h3>背景设置</h3>
-                    <select class="theme-select" id="bgTheme">
-                        <option value="">选择节期/假日</option>
-                        <option value="christmas">圣诞节</option>
-                        <option value="easter">复活节</option>
-                        <option value="newyear">春节</option>
-                        <option value="thanksgiving">感恩节</option>
-                        <option value="autumn">中秋节</option>
-                    </select>
                     <div class="btn-row">
                         <button class="btn" onclick="document.getElementById('bgUpload').click()">读盘</button>
                         <button class="btn" onclick="enablePasteMode('background')">粘贴</button>
@@ -237,13 +219,6 @@
                 <!-- 手势设置 -->
                 <div class="control-group">
                     <h3>手势设置</h3>
-                    <select class="theme-select" id="stickerTheme">
-                        <option value="">选择手势类型</option>
-                        <option value="praise">赞美手势</option>
-                        <option value="prayer">祈祷手势</option>
-                        <option value="celebration">庆祝手势</option>
-                        <option value="blessing">祝福手势</option>
-                    </select>
                     <div class="btn-row">
                         <button class="btn" onclick="document.getElementById('stickerUpload').click()">读盘</button>
                         <button class="btn" onclick="enablePasteMode('sticker')">粘贴</button>
@@ -294,25 +269,6 @@
         let pasteMode = null;
         let stickerConfirmed = false;
 
-        // 主题图片映射
-        const themeImages = {
-            // 背景主题 - 平铺整个画布
-            background: {
-                christmas: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&h=600&fit=crop&auto=format',
-                easter: 'https://images.unsplash.com/photo-1618519764620-7403abdbdfe9?w=800&h=600&fit=crop&auto=format',
-                newyear: 'https://images.unsplash.com/photo-1547981609-4b6bf67b7d12?w=800&h=600&fit=crop&auto=format',
-                thanksgiving: 'https://images.unsplash.com/photo-1633177314669-66f37c6d1cc1?w=800&h=600&fit=crop&auto=format',
-                autumn: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&auto=format'
-            },
-            // 手势主题 - 小图标，放在左上角
-            sticker: {
-                praise: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=200&h=200&fit=crop&auto=format',
-                prayer: 'https://images.unsplash.com/photo-1424746219973-8fe3bd07d8e3?w=200&h=200&fit=crop&auto=format',
-                celebration: 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=200&h=200&fit=crop&auto=format',
-                blessing: 'https://images.unsplash.com/photo-1518481852452-9415bceeba4d?w=200&h=200&fit=crop&auto=format'
-            }
-        };
-
         // 显示状态消息
         function showStatus(message, type = 'success') {
             const statusEl = document.getElementById('statusMessage');
@@ -342,7 +298,7 @@
                         if (pasteMode === 'background') {
                             loadBackground(event.target.result);
                         } else {
-                            loadSticker(event.target.result, true); // 用户粘贴的手势需要确认
+                            loadSticker(event.target.result);
                         }
                     };
                     reader.readAsDataURL(blob);
@@ -352,29 +308,13 @@
             pasteMode = null;
         });
 
-        // 背景主题选择
-        document.getElementById('bgTheme').addEventListener('change', function(e) {
-            const theme = e.target.value;
-            if (theme && themeImages.background[theme]) {
-                loadBackground(themeImages.background[theme], true); // 主题背景平铺
-            }
-        });
-
-        // 手势主题选择
-        document.getElementById('stickerTheme').addEventListener('change', function(e) {
-            const theme = e.target.value;
-            if (theme && themeImages.sticker[theme]) {
-                loadSticker(themeImages.sticker[theme], false); // 主题手势不需要确认
-            }
-        });
-
         // 上传背景
         document.getElementById('bgUpload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = function(f) {
-                loadBackground(f.target.result, true); // 用户上传的背景平铺
+                loadBackground(f.target.result);
             };
             reader.readAsDataURL(file);
             e.target.value = '';
@@ -386,23 +326,27 @@
             if (!file) return;
             const reader = new FileReader();
             reader.onload = function(f) {
-                loadSticker(f.target.result, true); // 用户上传的手势需要确认
+                loadSticker(f.target.result);
             };
             reader.readAsDataURL(file);
             e.target.value = '';
         });
 
         // 加载背景 - 平铺整个画布
-        function loadBackground(imageData, isUserUpload = false) {
+        function loadBackground(imageData) {
             fabric.Image.fromURL(imageData, function(newFrame) {
                 if (backgroundFrame) canvas.remove(backgroundFrame);
                 
                 // 背景平铺整个画布
+                const scaleX = canvas.width / newFrame.width;
+                const scaleY = canvas.height / newFrame.height;
+                const scale = Math.max(scaleX, scaleY);
+                
                 newFrame.set({
                     left: 0, 
                     top: 0, 
-                    scaleX: canvas.width / newFrame.width,
-                    scaleY: canvas.height / newFrame.height,
+                    scaleX: scale,
+                    scaleY: scale,
                     selectable: false, 
                     hasControls: false, 
                     evented: false,
@@ -416,17 +360,12 @@
                 canvas.sendToBack(newFrame);
                 backgroundFrame = newFrame;
                 canvas.renderAll();
-                
-                if (isUserUpload) {
-                    showStatus('背景设置成功！已平铺整个画布');
-                } else {
-                    showStatus('主题背景设置成功！');
-                }
-            }, null, { crossOrigin: 'anonymous' });
+                showStatus('背景设置成功！已平铺整个画布');
+            });
         }
 
         // 加载手势 - 放在左上角等待确认
-        function loadSticker(imageData, needConfirmation = false) {
+        function loadSticker(imageData) {
             fabric.Image.fromURL(imageData, function(sticker) {
                 if (currentSticker) canvas.remove(currentSticker);
                 
@@ -439,21 +378,16 @@
                     hasControls: true,
                     cornerStyle: 'circle',
                     transparentCorners: false,
-                    lockMovementX: !needConfirmation, // 需要确认时可以移动
-                    lockMovementY: !needConfirmation
+                    lockMovementX: false, // 可以移动
+                    lockMovementY: false
                 });
                 
                 canvas.add(sticker);
                 currentSticker = sticker;
-                stickerConfirmed = !needConfirmation;
+                stickerConfirmed = false;
                 canvas.renderAll();
-                
-                if (needConfirmation) {
-                    showStatus('手势已添加到左上角，请拖拽到合适位置后点击"确认手势位置"');
-                } else {
-                    showStatus('主题手势已添加！');
-                }
-            }, null, { crossOrigin: 'anonymous' });
+                showStatus('手势已添加到左上角，请拖拽到合适位置后点击"确认手势位置"');
+            });
         }
 
         // 确认手势位置
@@ -519,7 +453,7 @@
             showStatus('已清理所有元素');
         }
 
-        // 下载功能
+        // 下载功能 - 使用toBlob避免跨域问题
         function downloadImage() {
             try {
                 if (canvas.getObjects().length === 0) {
@@ -528,19 +462,28 @@
                 }
 
                 showStatus('正在生成图片...');
-                const dataURL = canvas.toDataURL({
-                    format: 'png',
-                    quality: 1
-                });
                 
-                const link = document.createElement('a');
-                link.download = `读书会图片_${Date.now()}.png`;
-                link.href = dataURL;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                showStatus('✅ 下载成功！');
+                // 使用toBlob方法避免跨域问题
+                canvas.toBlob(function(blob) {
+                    if (blob) {
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.download = `读书会图片_${Date.now()}.png`;
+                        link.href = url;
+                        link.style.display = 'none';
+                        
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        // 清理URL
+                        setTimeout(() => URL.revokeObjectURL(url), 100);
+                        
+                        showStatus('✅ 下载成功！');
+                    } else {
+                        showStatus('❌ 生成图片失败', 'error');
+                    }
+                }, 'image/png', 1);
 
             } catch (error) {
                 console.error('下载错误:', error);
@@ -549,7 +492,7 @@
         }
 
         // 初始提示
-        showStatus('欢迎使用！请先选择或设置背景');
+        showStatus('欢迎使用！请先设置背景');
     </script>
 </body>
 </html>
