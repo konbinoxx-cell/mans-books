@@ -20,7 +20,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
             border-radius: 15px;
@@ -40,20 +40,17 @@
             margin-bottom: 10px;
         }
         
-        .header p {
-            opacity: 0.8;
-        }
-        
         .content {
             display: flex;
-            min-height: 600px;
+            min-height: 700px;
         }
         
         .sidebar {
-            width: 300px;
+            width: 350px;
             background: #f8f9fa;
             padding: 20px;
             border-right: 1px solid #e9ecef;
+            overflow-y: auto;
         }
         
         .main-content {
@@ -62,7 +59,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
         }
         
         .upload-area {
@@ -114,33 +111,106 @@
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
         
+        .btn-success {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+        }
+        
         .canvas-container {
             border: 2px solid #e9ecef;
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+            background: #f8f9fa;
+            min-height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         #canvas {
-            background: #f8f9fa;
+            background: white;
         }
         
-        .download-btn {
-            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+        .frame-preview {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .frame-item {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .frame-item:hover {
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+        
+        .frame-item.active {
+            border-color: #667eea;
+            background: #eef2ff;
+        }
+        
+        .frame-item img {
+            width: 100%;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        
+        .frame-item .frame-name {
+            font-size: 12px;
+            margin-top: 5px;
+            color: #666;
+        }
+        
+        .custom-frame-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .custom-frame-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .custom-frame-input button {
+            padding: 8px 15px;
+            background: #667eea;
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s;
         }
         
-        .download-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        .size-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .size-controls button {
+            flex: 1;
+            padding: 8px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .size-controls button:hover {
+            background: #5a6268;
         }
         
         .status-message {
@@ -166,13 +236,20 @@
         .hidden {
             display: none;
         }
+        
+        .instruction {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>📚 读书会图片编辑器</h1>
-            <p>为Zoom截图添加相框、手势图案和文字框</p>
+            <p>为Zoom截图添加相框、手势图案和文字框 - 支持拖拽调整大小</p>
         </div>
         
         <div class="content">
@@ -186,11 +263,34 @@
                 
                 <div class="control-group">
                     <h3>🎨 相框设置</h3>
-                    <button class="btn" onclick="addFrame('christmas')">🎄 圣诞主题</button>
-                    <button class="btn" onclick="addFrame('easter')">🐰 复活节主题</button>
-                    <button class="btn" onclick="addFrame('chinese_new_year')">🏮 春节主题</button>
-                    <button class="btn" onclick="addFrame('thanksgiving')">🦃 感恩节主题</button>
-                    <button class="btn" onclick="addFrame('general')">🌟 通用相框</button>
+                    <p class="instruction">先选择相框，然后上传图片进行叠加</p>
+                    
+                    <div class="frame-preview">
+                        <div class="frame-item" onclick="selectFrame('christmas')">
+                            <img src="https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=200&h=150&fit=crop&auto=format" alt="圣诞">
+                            <div class="frame-name">圣诞主题</div>
+                        </div>
+                        <div class="frame-item" onclick="selectFrame('easter')">
+                            <img src="https://images.unsplash.com/photo-1618519764620-7403abdbdfe9?w=200&h=150&fit=crop&auto=format" alt="复活节">
+                            <div class="frame-name">复活节主题</div>
+                        </div>
+                        <div class="frame-item" onclick="selectFrame('chinese_new_year')">
+                            <img src="https://images.unsplash.com/photo-1547981609-4b6bf67b7d12?w=200&h=150&fit=crop&auto=format" alt="春节">
+                            <div class="frame-name">春节主题</div>
+                        </div>
+                        <div class="frame-item" onclick="selectFrame('thanksgiving')">
+                            <img src="https://images.unsplash.com/photo-1633177314669-66f37c6d1cc1?w=200&h=150&fit=crop&auto=format" alt="感恩节">
+                            <div class="frame-name">感恩节主题</div>
+                        </div>
+                    </div>
+                    
+                    <div class="custom-frame-input">
+                        <input type="text" id="customFrameUrl" placeholder="粘贴相框图片网址...">
+                        <button onclick="addCustomFrame()">添加</button>
+                    </div>
+                    
+                    <button class="btn" onclick="applySelectedFrame()">应用选中相框</button>
+                    <button class="btn btn-secondary" onclick="removeFrame()">移除相框</button>
                 </div>
                 
                 <div class="control-group">
@@ -199,12 +299,27 @@
                     <button class="btn" onclick="addSticker('prayer')">🙏 祈祷手势</button>
                     <button class="btn" onclick="addSticker('celebration')">🎉 庆祝手势</button>
                     <button class="btn" onclick="addSticker('blessing')">✝️ 祝福手势</button>
+                    
+                    <div class="custom-frame-input">
+                        <input type="text" id="customStickerUrl" placeholder="粘贴手势图片网址...">
+                        <button onclick="addCustomSticker()">添加手势</button>
+                    </div>
                 </div>
                 
                 <div class="control-group">
                     <h3>📝 文字框</h3>
                     <button class="btn" onclick="addTextBox()">添加文字框</button>
+                    
+                    <div class="size-controls">
+                        <button onclick="bringForward()">上移一层</button>
+                        <button onclick="sendBackward()">下移一层</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>🛠️ 工具</h3>
                     <button class="btn btn-secondary" onclick="clearAll()">清除所有元素</button>
+                    <button class="btn btn-success" onclick="downloadImage()">💾 下载图片</button>
                 </div>
             </div>
             
@@ -214,23 +329,20 @@
                     <canvas id="canvas" width="800" height="500"></canvas>
                 </div>
                 
-                <div id="statusMessage" class="status-message hidden"></div>
+                <div class="instruction">
+                    💡 提示：选中元素后可以拖拽移动、调整大小和旋转
+                </div>
                 
-                <button class="download-btn" onclick="downloadImage()">
-                    💾 下载图片
-                </button>
+                <div id="statusMessage" class="status-message hidden"></div>
             </div>
         </div>
     </div>
 
     <script>
         // 初始化Fabric.js画布
-        const canvas = new fabric.Canvas('canvas', {
-            backgroundColor: '#f8f9fa'
-        });
-        
-        let originalImage = null;
-        const IMAGE_POSITION = { left: 50, top: 80 }; // 固定图片位置，为相框留出空间
+        const canvas = new fabric.Canvas('canvas');
+        let selectedFrame = null;
+        let currentFrameType = null;
 
         // 显示状态消息
         function showStatus(message, type = 'success') {
@@ -244,6 +356,91 @@
             }, 3000);
         }
 
+        // 选择相框
+        function selectFrame(frameType) {
+            // 移除之前的选择
+            document.querySelectorAll('.frame-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // 添加当前选择
+            event.target.closest('.frame-item').classList.add('active');
+            currentFrameType = frameType;
+            showStatus(`已选择 ${frameType} 相框，点击"应用相框"按钮使用`);
+        }
+
+        // 应用选中的相框
+        function applySelectedFrame() {
+            if (!currentFrameType) {
+                showStatus('请先选择一个相框！', 'error');
+                return;
+            }
+            
+            const frameUrls = {
+                christmas: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&h=600&fit=crop&auto=format',
+                easter: 'https://images.unsplash.com/photo-1618519764620-7403abdbdfe9?w=800&h=600&fit=crop&auto=format',
+                chinese_new_year: 'https://images.unsplash.com/photo-1547981609-4b6bf67b7d12?w=800&h=600&fit=crop&auto=format',
+                thanksgiving: 'https://images.unsplash.com/photo-1633177314669-66f37c6d1cc1?w=800&h=600&fit=crop&auto=format'
+            };
+            
+            loadFrame(frameUrls[currentFrameType]);
+        }
+
+        // 加载相框
+        function loadFrame(frameUrl) {
+            showStatus('正在加载相框...');
+            
+            fabric.Image.fromURL(frameUrl, function(frame) {
+                // 移除之前的相框
+                if (selectedFrame) {
+                    canvas.remove(selectedFrame);
+                }
+                
+                // 设置相框覆盖整个画布
+                frame.set({
+                    left: 0,
+                    top: 0,
+                    width: canvas.width,
+                    height: canvas.height,
+                    selectable: true, // 允许选择和调整
+                    hasControls: true,
+                    lockUniScaling: false,
+                    cornerStyle: 'circle',
+                    transparentCorners: false
+                });
+                
+                canvas.add(frame);
+                canvas.sendToBack(frame); // 放到最底层
+                selectedFrame = frame;
+                canvas.renderAll();
+                
+                showStatus('相框已添加！可以拖拽调整大小和位置');
+            }, null, { crossOrigin: 'anonymous' });
+        }
+
+        // 添加自定义相框
+        function addCustomFrame() {
+            const frameUrl = document.getElementById('customFrameUrl').value.trim();
+            if (!frameUrl) {
+                showStatus('请输入图片网址！', 'error');
+                return;
+            }
+            
+            loadFrame(frameUrl);
+            document.getElementById('customFrameUrl').value = '';
+        }
+
+        // 移除相框
+        function removeFrame() {
+            if (selectedFrame) {
+                canvas.remove(selectedFrame);
+                selectedFrame = null;
+                showStatus('相框已移除');
+            } else {
+                showStatus('没有相框可移除', 'error');
+            }
+        }
+
         // 上传图片处理
         document.getElementById('imageUpload').addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -252,120 +449,92 @@
             const reader = new FileReader();
             reader.onload = function(f) {
                 fabric.Image.fromURL(f.target.result, function(img) {
-                    canvas.clear();
+                    // 设置图片初始大小和位置
+                    const scale = Math.min(600 / img.width, 400 / img.height) * 0.8;
                     
-                    // 设置图片位置（固定位置）
                     img.set({
-                        left: IMAGE_POSITION.left,
-                        top: IMAGE_POSITION.top,
+                        left: canvas.width / 2 - (img.width * scale) / 2,
+                        top: canvas.height / 2 - (img.height * scale) / 2,
+                        scaleX: scale,
+                        scaleY: scale,
                         selectable: true,
-                        hasControls: true
+                        hasControls: true,
+                        cornerStyle: 'circle',
+                        transparentCorners: false,
+                        lockUniScaling: false
                     });
                     
                     canvas.add(img);
-                    originalImage = img;
+                    canvas.bringToFront(img); // 确保图片在相框上方
                     canvas.renderAll();
                     
-                    showStatus('图片上传成功！现在可以添加相框和图案了。');
+                    showStatus('图片上传成功！可以拖拽调整大小和位置');
                 });
             };
             reader.readAsDataURL(file);
         });
 
-        // 预定义的相框和图案资源（使用在线资源）
-        const resources = {
-            frames: {
-                christmas: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&h=600&fit=crop&auto=format',
-                easter: 'https://images.unsplash.com/photo-1618519764620-7403abdbdfe9?w=800&h=600&fit=crop&auto=format',
-                chinese_new_year: 'https://images.unsplash.com/photo-1547981609-4b6bf67b7d12?w=800&h=600&fit=crop&auto=format',
-                thanksgiving: 'https://images.unsplash.com/photo-1633177314669-66f37c6d1cc1?w=800&h=600&fit=crop&auto=format',
-                general: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=800&h=600&fit=crop&auto=format'
-            },
-            stickers: {
-                praise: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=200&h=200&fit=crop&auto=format',
-                prayer: 'https://images.unsplash.com/photo-1424746219973-8fe3bd07d8e3?w=200&h=200&fit=crop&auto=format',
-                celebration: 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=200&h=200&fit=crop&auto=format',
-                blessing: 'https://images.unsplash.com/photo-1518481852452-9415bceeba4d?w=200&h=200&fit=crop&auto=format'
-            }
+        // 预定义的手势图案
+        const stickerUrls = {
+            praise: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=200&h=200&fit=crop&auto=format',
+            prayer: 'https://images.unsplash.com/photo-1424746219973-8fe3bd07d8e3?w=200&h=200&fit=crop&auto=format',
+            celebration: 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=200&h=200&fit=crop&auto=format',
+            blessing: 'https://images.unsplash.com/photo-1518481852452-9415bceeba4d?w=200&h=200&fit=crop&auto=format'
         };
 
-        // 添加相框
-        async function addFrame(frameType) {
-            if (!originalImage) {
-                showStatus('请先上传图片！', 'error');
-                return;
-            }
+        // 添加手势图案
+        function addSticker(stickerType) {
+            const stickerUrl = stickerUrls[stickerType];
+            if (!stickerUrl) return;
             
-            showStatus('正在添加相框...');
-            
-            try {
-                const frameUrl = resources.frames[frameType] || resources.frames.general;
-                
-                fabric.Image.fromURL(frameUrl, function(frame) {
-                    // 设置相框覆盖整个画布
-                    frame.set({
-                        left: 0,
-                        top: 0,
-                        width: canvas.width,
-                        height: canvas.height,
-                        selectable: false,
-                        evented: false,
-                        opacity: 0.7
-                    });
-                    
-                    canvas.add(frame);
-                    canvas.sendToBack(frame); // 将相框放到最底层
-                    canvas.renderAll();
-                    
-                    showStatus('相框添加成功！');
+            fabric.Image.fromURL(stickerUrl, function(sticker) {
+                sticker.set({
+                    left: 600,
+                    top: 350,
+                    scaleX: 0.2,
+                    scaleY: 0.2,
+                    selectable: true,
+                    hasControls: true,
+                    cornerStyle: 'circle',
+                    transparentCorners: false,
+                    lockUniScaling: false
                 });
-            } catch (error) {
-                showStatus('相框添加失败，请重试', 'error');
-                console.error('Frame error:', error);
-            }
+                
+                canvas.add(sticker);
+                canvas.renderAll();
+                showStatus('手势图案已添加！可以拖拽调整');
+            }, null, { crossOrigin: 'anonymous' });
         }
 
-        // 添加手势图案
-        async function addSticker(stickerType) {
-            if (!originalImage) {
-                showStatus('请先上传图片！', 'error');
+        // 添加自定义手势
+        function addCustomSticker() {
+            const stickerUrl = document.getElementById('customStickerUrl').value.trim();
+            if (!stickerUrl) {
+                showStatus('请输入图片网址！', 'error');
                 return;
             }
             
-            showStatus('正在添加手势图案...');
-            
-            try {
-                const stickerUrl = resources.stickers[stickerType] || resources.stickers.praise;
-                
-                fabric.Image.fromURL(stickerUrl, function(sticker) {
-                    // 设置图案位置和大小
-                    sticker.set({
-                        left: 600, // 右侧位置
-                        top: 400,  // 底部位置
-                        scaleX: 0.15,
-                        scaleY: 0.15,
-                        cornerStyle: 'circle',
-                        transparentCorners: false
-                    });
-                    
-                    canvas.add(sticker);
-                    canvas.renderAll();
-                    
-                    showStatus('手势图案添加成功！');
+            fabric.Image.fromURL(stickerUrl, function(sticker) {
+                sticker.set({
+                    left: 600,
+                    top: 350,
+                    scaleX: 0.2,
+                    scaleY: 0.2,
+                    selectable: true,
+                    hasControls: true,
+                    cornerStyle: 'circle',
+                    transparentCorners: false
                 });
-            } catch (error) {
-                showStatus('图案添加失败，请重试', 'error');
-                console.error('Sticker error:', error);
-            }
+                
+                canvas.add(sticker);
+                canvas.renderAll();
+                showStatus('自定义图案已添加！可以拖拽调整');
+                document.getElementById('customStickerUrl').value = '';
+            }, null, { crossOrigin: 'anonymous' });
         }
 
         // 添加文字框
         function addTextBox() {
-            if (!originalImage) {
-                showStatus('请先上传图片！', 'error');
-                return;
-            }
-            
             const textContent = prompt('请输入文字内容:', '欢迎参加读书会分享');
             if (!textContent) return;
             
@@ -377,35 +546,52 @@
                 fill: '#2c3e50',
                 fontFamily: 'Microsoft YaHei',
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                padding: 10,
+                padding: 15,
                 borderColor: '#667eea',
                 cornerColor: '#667eea',
                 cornerStyle: 'circle',
-                transparentCorners: false
+                transparentCorners: false,
+                selectable: true,
+                hasControls: true
             });
             
             canvas.add(textbox);
             canvas.renderAll();
-            showStatus('文字框添加成功！可以拖动调整位置');
+            showStatus('文字框已添加！可以拖拽调整大小和位置');
         }
 
-        // 清除所有添加的元素
-        function clearAll() {
-            if (!originalImage) {
-                showStatus('没有可清除的内容', 'error');
-                return;
+        // 图层控制
+        function bringForward() {
+            const activeObject = canvas.getActiveObject();
+            if (activeObject) {
+                canvas.bringForward(activeObject);
+                showStatus('元素已上移一层');
             }
-            
+        }
+
+        function sendBackward() {
+            const activeObject = canvas.getActiveObject();
+            if (activeObject) {
+                canvas.sendBackwards(activeObject);
+                showStatus('元素已下移一层');
+            }
+        }
+
+        // 清除所有元素
+        function clearAll() {
             canvas.clear();
-            canvas.add(originalImage);
-            canvas.renderAll();
-            showStatus('已清除所有添加的元素');
+            selectedFrame = null;
+            currentFrameType = null;
+            document.querySelectorAll('.frame-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            showStatus('已清除所有内容');
         }
 
         // 下载图片
         function downloadImage() {
-            if (!originalImage) {
-                showStatus('请先上传图片！', 'error');
+            if (canvas.getObjects().length === 0) {
+                showStatus('画布为空，无法下载', 'error');
                 return;
             }
             
@@ -425,7 +611,7 @@
         }
 
         // 初始提示
-        showStatus('请上传Zoom截图开始编辑');
+        showStatus('请先选择相框，然后上传Zoom截图');
     </script>
 </body>
 </html>
