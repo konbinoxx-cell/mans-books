@@ -115,6 +115,10 @@
             background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
         }
         
+        .btn-info {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        }
+        
         .canvas-container {
             border: 2px solid #e9ecef;
             border-radius: 10px;
@@ -126,10 +130,30 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
         
         #canvas {
             background: white;
+        }
+        
+        .paste-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: white;
+            z-index: 1000;
+        }
+        
+        .paste-overlay.hidden {
+            display: none;
         }
         
         .frame-preview {
@@ -297,7 +321,7 @@
     <div class="container">
         <div class="header">
             <h1>📚 读书会图片编辑器</h1>
-            <p>为Zoom截图添加相框、手势图案和文字框 - 新相框自动覆盖旧相框</p>
+            <p>为Zoom截图添加相框、手势图案和文字框 - 支持直接粘贴背景图片</p>
         </div>
         
         <div class="content">
@@ -310,8 +334,11 @@
                 </div>
                 
                 <div class="control-group">
-                    <h3>🎨 相框设置 <span class="lock-icon">🔄 新相框覆盖旧相框</span></h3>
-                    <p class="instruction">每次应用新相框会自动替换旧相框</p>
+                    <h3>🎨 背景设置 <span class="lock-icon">🔄 新背景覆盖旧背景</span></h3>
+                    <p class="instruction">三种方式设置背景：选择相框、粘贴图片、输入网址</p>
+                    
+                    <!-- 快速粘贴背景 -->
+                    <button class="btn btn-info" onclick="enablePasteMode()">📋 直接粘贴背景图片</button>
                     
                     <div class="frame-preview">
                         <div class="frame-item" onclick="selectFrame('christmas')">
@@ -333,12 +360,12 @@
                     </div>
                     
                     <div class="custom-frame-input">
-                        <input type="text" id="customFrameUrl" placeholder="粘贴相框图片网址...">
-                        <button onclick="addCustomFrame()">添加</button>
+                        <input type="text" id="customFrameUrl" placeholder="粘贴背景图片网址...">
+                        <button onclick="addCustomFrame()">添加背景</button>
                     </div>
                     
-                    <button class="btn" onclick="applySelectedFrame()">应用选中相框</button>
-                    <button class="btn btn-secondary" onclick="removeFrame()">移除相框</button>
+                    <button class="btn" onclick="applySelectedFrame()">应用选中背景</button>
+                    <button class="btn btn-secondary" onclick="removeFrame()">移除背景</button>
                 </div>
                 
                 <div class="control-group">
@@ -391,10 +418,16 @@
             <div class="main-content">
                 <div class="canvas-container">
                     <canvas id="canvas" width="800" height="500"></canvas>
+                    <div id="pasteOverlay" class="paste-overlay hidden">
+                        <h2>📋 粘贴模式已激活</h2>
+                        <p>请按 Ctrl+V 粘贴图片作为背景</p>
+                        <p>图片将自动调整到画布大小</p>
+                        <button class="btn" onclick="disablePasteMode()" style="margin-top: 20px;">取消粘贴</button>
+                    </div>
                 </div>
                 
                 <div class="instruction">
-                    💡 提示：手势放在左上/右上角，文字框在底部，可自定义颜色
+                    💡 提示：点击"直接粘贴背景图片"，然后按Ctrl+V粘贴任意图片作为背景
                 </div>
                 
                 <div id="statusMessage" class="status-message hidden"></div>
@@ -408,6 +441,7 @@
         let backgroundFrame = null;
         let currentFrameType = null;
         let currentTextbox = null;
+        let pasteMode = false;
 
         // 显示状态消息
         function showStatus(message, type = 'success') {
@@ -421,6 +455,79 @@
             }, 3000);
         }
 
+        // 启用粘贴模式
+        function enablePasteMode() {
+            pasteMode = true;
+            document.getElementById('pasteOverlay').classList.remove('hidden');
+            showStatus('粘贴模式已激活！请按 Ctrl+V 粘贴图片作为背景');
+        }
+
+        // 禁用粘贴模式
+        function disablePasteMode() {
+            pasteMode = false;
+            document.getElementById('pasteOverlay').classList.add('hidden');
+            showStatus('粘贴模式已关闭');
+        }
+
+        // 监听粘贴事件
+        document.addEventListener('paste', function(e) {
+            if (!pasteMode) return;
+            
+            e.preventDefault();
+            disablePasteMode();
+            
+            const items = e.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    const blob = items[i].getAsFile();
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(event) {
+                        // 使用粘贴的图片作为背景
+                        fabric.Image.fromURL(event.target.result, function(img) {
+                            // 自动移除之前的背景
+                            if (backgroundFrame) {
+                                canvas.remove(backgroundFrame);
+                            }
+                            
+                            // 计算缩放比例以适应画布
+                            const scaleX = canvas.width / img.width;
+                            const scaleY = canvas.height / img.height;
+                            const scale = Math.max(scaleX, scaleY); // 覆盖整个画布
+                            
+                            img.set({
+                                left: 0,
+                                top: 0,
+                                scaleX: scale,
+                                scaleY: scale,
+                                selectable: false,
+                                hasControls: false,
+                                hasBorders: false,
+                                evented: false,
+                                lockMovementX: true,
+                                lockMovementY: true,
+                                lockRotation: true,
+                                lockScalingX: true,
+                                lockScalingY: true,
+                                originX: 'left',
+                                originY: 'top'
+                            });
+                            
+                            canvas.add(img);
+                            canvas.sendToBack(img);
+                            backgroundFrame = img;
+                            canvas.renderAll();
+                            
+                            showStatus('背景图片粘贴成功！已自动调整到画布大小');
+                        });
+                    };
+                    
+                    reader.readAsDataURL(blob);
+                    break;
+                }
+            }
+        });
+
         // 选择相框
         function selectFrame(frameType) {
             // 移除之前的选择
@@ -431,13 +538,13 @@
             // 添加当前选择
             event.target.closest('.frame-item').classList.add('active');
             currentFrameType = frameType;
-            showStatus(`已选择 ${frameType} 相框，点击"应用相框"按钮替换当前相框`);
+            showStatus(`已选择 ${frameType} 背景，点击"应用背景"按钮替换当前背景`);
         }
 
-        // 应用选中的相框（自动覆盖旧的）
+        // 应用选中的背景（自动覆盖旧的）
         function applySelectedFrame() {
             if (!currentFrameType) {
-                showStatus('请先选择一个相框！', 'error');
+                showStatus('请先选择一个背景！', 'error');
                 return;
             }
             
@@ -451,22 +558,26 @@
             loadFrame(frameUrls[currentFrameType]);
         }
 
-        // 加载相框作为底板（自动移除旧的）
+        // 加载背景（自动移除旧的）
         function loadFrame(frameUrl) {
-            showStatus('正在加载新相框，替换旧相框...');
+            showStatus('正在加载新背景，替换旧背景...');
             
             fabric.Image.fromURL(frameUrl, function(newFrame) {
-                // 自动移除之前的相框
+                // 自动移除之前的背景
                 if (backgroundFrame) {
                     canvas.remove(backgroundFrame);
                 }
                 
-                // 设置新相框作为底板
+                // 设置新背景
+                const scaleX = canvas.width / newFrame.width;
+                const scaleY = canvas.height / newFrame.height;
+                const scale = Math.max(scaleX, scaleY);
+                
                 newFrame.set({
                     left: 0,
                     top: 0,
-                    width: canvas.width,
-                    height: canvas.height,
+                    scaleX: scale,
+                    scaleY: scale,
                     selectable: false,
                     hasControls: false,
                     hasBorders: false,
@@ -476,7 +587,8 @@
                     lockRotation: true,
                     lockScalingX: true,
                     lockScalingY: true,
-                    excludeFromExport: false
+                    originX: 'left',
+                    originY: 'top'
                 });
                 
                 canvas.add(newFrame);
@@ -484,11 +596,11 @@
                 backgroundFrame = newFrame;
                 canvas.renderAll();
                 
-                showStatus('新相框已替换旧相框！');
+                showStatus('新背景已替换旧背景！');
             }, null, { crossOrigin: 'anonymous' });
         }
 
-        // 添加自定义相框（自动覆盖旧的）
+        // 添加自定义背景（自动覆盖旧的）
         function addCustomFrame() {
             const frameUrl = document.getElementById('customFrameUrl').value.trim();
             if (!frameUrl) {
@@ -500,14 +612,14 @@
             document.getElementById('customFrameUrl').value = '';
         }
 
-        // 移除相框
+        // 移除背景
         function removeFrame() {
             if (backgroundFrame) {
                 canvas.remove(backgroundFrame);
                 backgroundFrame = null;
-                showStatus('相框已移除');
+                showStatus('背景已移除');
             } else {
-                showStatus('没有相框可移除', 'error');
+                showStatus('没有背景可移除', 'error');
             }
         }
 
@@ -681,7 +793,7 @@
             }
         }
 
-        // 清除所有元素（保留相框）
+        // 清除所有元素（保留背景）
         function clearAll() {
             const objects = canvas.getObjects();
             objects.forEach(obj => {
@@ -690,26 +802,24 @@
                 }
             });
             currentTextbox = null;
-            showStatus('已清除所有内容（相框保留）');
+            showStatus('已清除所有内容（背景保留）');
         }
 
-        // 修复下载功能
+        // 下载功能
         function downloadImage() {
             if (canvas.getObjects().length === 0) {
                 showStatus('画布为空，无法下载', 'error');
                 return;
             }
             
-            // 创建一个临时链接进行下载
             const link = document.createElement('a');
             link.download = `读书会图片_${new Date().getTime()}.png`;
             
-            // 使用 toDataURLWithMultiplier 提高图片质量
             canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
             const dataURL = canvas.toDataURL({
                 format: 'png',
                 quality: 1,
-                multiplier: 2 // 提高分辨率
+                multiplier: 2
             });
             
             link.href = dataURL;
@@ -721,7 +831,7 @@
         }
 
         // 初始提示
-        showStatus('请先选择相框作为底板，然后上传Zoom截图');
+        showStatus('请先设置背景，然后上传Zoom截图');
     </script>
 </body>
 </html>
