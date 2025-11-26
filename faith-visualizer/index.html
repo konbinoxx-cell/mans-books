@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>弟兄讀書會 · 節期美圖生成器</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>🖼️ 弟兄讀書會 · 節期美圖生成器</h1>
+    <p>上傳 Zoom 圖 → 選節期相框 → 加手勢圖標 → 編輯文字 → 存到 Google Drive</p>
+
+    <input type="file" id="upload" accept="image/*" />
+    <button id="addText">➕ 新增動態文字</button>
+    <button id="connectDrive">☁️ 連接 Google Drive</button>
+
+    <!-- 搜尋框 -->
+    <input type="text" id="searchBox" placeholder="搜尋節期或圖標（如：復活節、舉手）" />
+
+    <!-- 相框選擇 -->
+    <div id="frameList"></div>
+
+    <!-- 手勢圖標 -->
+    <div class="section-title">手勢圖標</div>
+    <div id="iconList">
+      <img src="icons/hands_up.png" data-name="舉手禱告" class="icon-item" />
+      <img src="icons/heart_hands.png" data-name="比心" class="icon-item" />
+      <img src="icons/folded_hands.png" data-name="合十祈禱" class="icon-item" />
+    </div>
+
+    <button id="download">📥 下載圖片</button>
+    <button id="saveToDrive">☁️ 儲存到 Google Drive</button>
+
+    <div id="canvasContainer">
+      <canvas id="canvas"></canvas>
+    </div>
+  </div>
+
+  <script src="lib/fabric.min.js"></script>
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
