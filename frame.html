@@ -203,7 +203,7 @@
                     <h3>背景设置</h3>
                     <div class="btn-row">
                         <button class="btn" onclick="document.getElementById('bgUpload').click()">读盘</button>
-                        <button class="btn" onclick="enablePasteMode()">粘贴</button>
+                        <button class="btn" onclick="enablePasteMode('background')">粘贴</button>
                     </div>
                     <input type="file" id="bgUpload" accept="image/*">
                 </div>
@@ -211,7 +211,11 @@
                 <!-- 手势设置 -->
                 <div class="control-group">
                     <h3>手势设置</h3>
-                    <button class="btn" onclick="addSticker()">添加手势</button>
+                    <div class="btn-row">
+                        <button class="btn" onclick="document.getElementById('stickerUpload').click()">读盘</button>
+                        <button class="btn" onclick="enablePasteMode('sticker')">粘贴</button>
+                    </div>
+                    <input type="file" id="stickerUpload" accept="image/*">
                 </div>
                 
                 <!-- 文字设置 -->
@@ -251,8 +255,9 @@
         // 初始化画布
         const canvas = new fabric.Canvas('canvas');
         let backgroundFrame = null;
+        let currentSticker = null;
         let currentTextbox = null;
-        let pasteMode = false;
+        let pasteMode = null; // 'background' 或 'sticker'
 
         // 显示状态消息
         function showStatus(message, type = 'success') {
@@ -264,16 +269,15 @@
         }
 
         // 启用粘贴模式
-        function enablePasteMode() {
-            pasteMode = true;
-            showStatus('请按 Ctrl+V 粘贴背景图片');
+        function enablePasteMode(type) {
+            pasteMode = type;
+            showStatus(`请按 Ctrl+V 粘贴${type === 'background' ? '背景' : '手势'}图片`);
         }
 
         // 监听粘贴事件
         document.addEventListener('paste', function(e) {
             if (!pasteMode) return;
             e.preventDefault();
-            pasteMode = false;
             
             const items = e.clipboardData.items;
             for (let i = 0; i < items.length; i++) {
@@ -281,12 +285,17 @@
                     const blob = items[i].getAsFile();
                     const reader = new FileReader();
                     reader.onload = function(event) {
-                        loadBackground(event.target.result);
+                        if (pasteMode === 'background') {
+                            loadBackground(event.target.result);
+                        } else {
+                            loadSticker(event.target.result);
+                        }
                     };
                     reader.readAsDataURL(blob);
                     break;
                 }
             }
+            pasteMode = null;
         });
 
         // 上传背景
@@ -301,7 +310,19 @@
             e.target.value = '';
         });
 
-        // 加载背景 - 修复跨域问题
+        // 上传手势
+        document.getElementById('stickerUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(f) {
+                loadSticker(f.target.result);
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        });
+
+        // 加载背景
         function loadBackground(imageData) {
             fabric.Image.fromURL(imageData, function(newFrame) {
                 if (backgroundFrame) canvas.remove(backgroundFrame);
@@ -321,15 +342,14 @@
                 backgroundFrame = newFrame;
                 canvas.renderAll();
                 showStatus('背景设置成功！');
-            }, null, { crossOrigin: 'anonymous' }); // 🔑 修复跨域
+            });
         }
 
-        // 添加手势 - 绝对左上角，修复跨域问题
-        function addSticker() {
-            // 使用支持CORS的图片源
-            const stickerUrl = 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=200&h=200&fit=crop&auto=format';
-            
-            fabric.Image.fromURL(stickerUrl, function(sticker) {
+        // 加载手势 - 放在左上角
+        function loadSticker(imageData) {
+            fabric.Image.fromURL(imageData, function(sticker) {
+                if (currentSticker) canvas.remove(currentSticker);
+                
                 sticker.set({
                     left: 20,  // 绝对左上角
                     top: 20,   // 绝对左上角
@@ -342,9 +362,10 @@
                 });
                 
                 canvas.add(sticker);
+                currentSticker = sticker;
                 canvas.renderAll();
                 showStatus('手势已添加到左上角，可拖拽移动');
-            }, null, { crossOrigin: 'anonymous' }); // 🔑 修复跨域
+            });
         }
 
         // 添加文字框
@@ -390,10 +411,11 @@
                 }
             });
             currentTextbox = null;
+            currentSticker = null;
             showStatus('已清理所有元素');
         }
 
-        // 修复的下载功能 - 彻底解决跨域问题
+        // 下载功能
         function downloadImage() {
             try {
                 if (canvas.getObjects().length === 0) {
@@ -401,44 +423,24 @@
                     return;
                 }
 
-                showStatus('正在合成图片...');
-
-                // 方法1：使用fabric的toCanvasElement（最可靠）
-                const fabricCanvasEl = canvas.toCanvasElement();
+                showStatus('正在生成图片...');
+                const dataURL = canvas.toDataURL({
+                    format: 'png',
+                    quality: 1
+                });
                 
-                const finalCanvas = document.createElement('canvas');
-                finalCanvas.width = fabricCanvasEl.width;
-                finalCanvas.height = fabricCanvasEl.height;
-                const ctx = finalCanvas.getContext('2d');
+                const link = document.createElement('a');
+                link.download = `读书会图片_${Date.now()}.png`;
+                link.href = dataURL;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
                 
-                // 填充白色背景确保无透明区域
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
-                
-                // 绘制fabric canvas内容
-                ctx.drawImage(fabricCanvasEl, 0, 0);
-                
-                // 转换为Blob下载
-                finalCanvas.toBlob(function(blob) {
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.download = `读书会图片_${Date.now()}.png`;
-                    link.href = url;
-                    link.style.display = 'none';
-                    
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    
-                    // 清理URL
-                    setTimeout(() => URL.revokeObjectURL(url), 100);
-                    
-                    showStatus('✅ 下载成功！');
-                }, 'image/png', 1);
+                showStatus('✅ 下载成功！');
 
             } catch (error) {
                 console.error('下载错误:', error);
-                showStatus('❌ 下载失败：' + error.message, 'error');
+                showStatus('❌ 下载失败，请重试', 'error');
             }
         }
 
