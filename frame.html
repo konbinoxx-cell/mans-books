@@ -6,6 +6,7 @@
     <title>读书会图片编辑器</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
     <style>
+        /* 保持之前的CSS样式不变 */
         * {
             margin: 0;
             padding: 0;
@@ -388,6 +389,36 @@
             margin: 10px 0;
         }
         
+        .frame-position-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .position-btn {
+            padding: 10px;
+            background: #e9ecef;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .position-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .position-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
         /* 响应式设计 */
         @media (max-width: 1200px) {
             .content {
@@ -460,28 +491,35 @@
                     <h3>🎨 相框设置</h3>
                     <button class="btn btn-info" onclick="enablePasteMode()">📋 直接粘贴相框图片</button>
                     
+                    <div class="frame-position-controls">
+                        <button class="position-btn active" onclick="setFramePosition('top-left')">左上角装饰</button>
+                        <button class="position-btn" onclick="setFramePosition('bottom-right')">右下角装饰</button>
+                        <button class="position-btn" onclick="setFramePosition('top-right')">右上角装饰</button>
+                        <button class="position-btn" onclick="setFramePosition('bottom-left')">左下角装饰</button>
+                    </div>
+                    
                     <div class="frame-preview">
                         <div class="frame-item" onclick="loadFrame('floral')">
-                            <div class="frame-preview-img">🌸 花边相框</div>
-                            <div class="frame-name">花边相框</div>
+                            <div class="frame-preview-img">🌸 花边装饰</div>
+                            <div class="frame-name">花边装饰</div>
                         </div>
                         <div class="frame-item" onclick="loadFrame('vintage')">
-                            <div class="frame-preview-img">📜 复古相框</div>
-                            <div class="frame-name">复古相框</div>
+                            <div class="frame-preview-img">📜 复古装饰</div>
+                            <div class="frame-name">复古装饰</div>
                         </div>
                         <div class="frame-item" onclick="loadFrame('elegant')">
-                            <div class="frame-preview-img">✨ 优雅相框</div>
-                            <div class="frame-name">优雅相框</div>
+                            <div class="frame-preview-img">✨ 优雅装饰</div>
+                            <div class="frame-name">优雅装饰</div>
                         </div>
                         <div class="frame-item" onclick="loadFrame('minimal')">
-                            <div class="frame-preview-img">⚪ 简约相框</div>
-                            <div class="frame-name">简约相框</div>
+                            <div class="frame-preview-img">⚪ 简约装饰</div>
+                            <div class="frame-name">简约装饰</div>
                         </div>
                     </div>
                     
                     <div class="custom-frame-input">
-                        <input type="text" id="customFrameUrl" placeholder="输入相框图片网址...">
-                        <button onclick="addCustomFrame()">添加相框</button>
+                        <input type="text" id="customFrameUrl" placeholder="输入装饰图片网址...">
+                        <button onclick="addCustomFrame()">添加装饰</button>
                     </div>
                 </div>
                 
@@ -527,13 +565,13 @@
                     <canvas id="canvas" width="800" height="500"></canvas>
                     <div id="pasteOverlay" class="paste-overlay hidden">
                         <h2>📋 粘贴模式已激活</h2>
-                        <p>请按 Ctrl+V 粘贴相框图片</p>
+                        <p>请按 Ctrl+V 粘贴装饰图片</p>
                         <button class="btn" onclick="disablePasteMode()" style="margin-top: 20px;">取消粘贴</button>
                     </div>
                 </div>
                 
                 <div class="instruction">
-                    💡 使用步骤: 1. 上传Zoom截图 → 2. 添加相框 → 3. 添加手势 → 4. 添加文字 → 5. 下载
+                    💡 使用步骤: 1. 上传Zoom截图 → 2. 选择位置添加装饰 → 3. 添加手势 → 4. 添加文字 → 5. 下载
                 </div>
                 
                 <div id="statusMessage" class="status-message hidden"></div>
@@ -545,10 +583,11 @@
         // 初始化画布
         const canvas = new fabric.Canvas('canvas');
         let backgroundImage = null;
-        let currentFrame = null;
+        let currentFrames = []; // 存储多个装饰框
         let textbox1 = null;
         let textbox2 = null;
         let pasteMode = false;
+        let currentFramePosition = 'top-left'; // 默认位置
 
         // 显示状态消息
         function showStatus(message, type = 'success') {
@@ -562,23 +601,44 @@
             }, 3000);
         }
 
+        // 设置装饰位置
+        function setFramePosition(position) {
+            currentFramePosition = position;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.position-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            showStatus(`已选择${getPositionName(position)}位置`);
+        }
+
+        // 获取位置名称
+        function getPositionName(position) {
+            const names = {
+                'top-left': '左上角',
+                'top-right': '右上角', 
+                'bottom-left': '左下角',
+                'bottom-right': '右下角'
+            };
+            return names[position] || position;
+        }
+
         // 文件上传处理
         document.getElementById('imageUpload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
             
-            // 显示文件名
             document.getElementById('fileName').textContent = file.name;
             
             const reader = new FileReader();
             reader.onload = function(f) {
                 fabric.Image.fromURL(f.target.result, function(img) {
-                    // 移除之前的背景图片
                     if (backgroundImage) {
                         canvas.remove(backgroundImage);
                     }
                     
-                    // 调整图片大小适应画布
                     const scale = Math.min(
                         (canvas.width * 0.8) / img.width,
                         (canvas.height * 0.8) / img.height
@@ -609,11 +669,11 @@
             reader.readAsDataURL(file);
         });
 
-        // 粘贴相框功能
+        // 粘贴装饰功能
         function enablePasteMode() {
             pasteMode = true;
             document.getElementById('pasteOverlay').classList.remove('hidden');
-            showStatus('请按 Ctrl+V 粘贴相框图片');
+            showStatus('请按 Ctrl+V 粘贴装饰图片');
         }
 
         function disablePasteMode() {
@@ -642,81 +702,158 @@
             }
         });
 
-        // 创建完整的图片相框（覆盖层）
+        // 创建装饰框
         function loadFrame(type) {
-            // 创建相框覆盖层 - 使用半透明的彩色图层作为示例
-            let frameColor, frameOpacity;
+            let frameConfig;
             
             switch(type) {
                 case 'floral':
-                    frameColor = 'rgba(255, 182, 193, 0.3)'; // 浅粉色
-                    frameOpacity = 0.3;
+                    frameConfig = {
+                        color: 'rgba(255, 182, 193, 0.6)',
+                        size: 80,
+                        emoji: '🌸'
+                    };
                     break;
                 case 'vintage':
-                    frameColor = 'rgba(210, 180, 140, 0.4)'; // 古铜色
-                    frameOpacity = 0.4;
+                    frameConfig = {
+                        color: 'rgba(210, 180, 140, 0.7)',
+                        size: 70,
+                        emoji: '📜'
+                    };
                     break;
                 case 'elegant':
-                    frameColor = 'rgba(147, 112, 219, 0.3)'; // 紫色
-                    frameOpacity = 0.3;
+                    frameConfig = {
+                        color: 'rgba(147, 112, 219, 0.6)',
+                        size: 90,
+                        emoji: '✨'
+                    };
                     break;
                 case 'minimal':
-                    frameColor = 'rgba(211, 211, 211, 0.2)'; // 浅灰色
-                    frameOpacity = 0.2;
+                    frameConfig = {
+                        color: 'rgba(211, 211, 211, 0.5)',
+                        size: 60,
+                        emoji: '⚪'
+                    };
                     break;
             }
             
-            // 创建相框覆盖层
-            const frameOverlay = new fabric.Rect({
-                width: canvas.width,
-                height: canvas.height,
-                fill: frameColor,
-                stroke: 'rgba(255, 255, 255, 0.8)',
-                strokeWidth: 20,
-                strokeDashArray: [10, 5],
-                selectable: false,
-                evented: false,
-                opacity: frameOpacity
-            });
-            
-            applyFrame(frameOverlay);
+            createFrameDecoration(frameConfig);
         }
 
-        // 应用相框
-        function applyFrame(newFrame) {
-            if (currentFrame) {
-                canvas.remove(currentFrame);
+        // 创建装饰元素
+        function createFrameDecoration(config) {
+            let left, top;
+            
+            // 根据选择的位置设置坐标
+            switch(currentFramePosition) {
+                case 'top-left':
+                    left = 20;
+                    top = 20;
+                    break;
+                case 'top-right':
+                    left = canvas.width - config.size - 20;
+                    top = 20;
+                    break;
+                case 'bottom-left':
+                    left = 20;
+                    top = canvas.height - config.size - 20;
+                    break;
+                case 'bottom-right':
+                    left = canvas.width - config.size - 20;
+                    top = canvas.height - config.size - 20;
+                    break;
             }
             
-            canvas.add(newFrame);
-            canvas.bringToFront(newFrame);
-            currentFrame = newFrame;
+            // 创建圆形装饰
+            const circle = new fabric.Circle({
+                left: left,
+                top: top,
+                radius: config.size / 2,
+                fill: config.color,
+                stroke: 'white',
+                strokeWidth: 3,
+                selectable: true,
+                hasControls: true,
+                cornerStyle: 'circle',
+                transparentCorners: false
+            });
+            
+            // 创建emoji文字
+            const text = new fabric.Text(config.emoji, {
+                left: left + config.size / 2,
+                top: top + config.size / 2,
+                fontSize: config.size * 0.5,
+                fill: 'white',
+                originX: 'center',
+                originY: 'center',
+                selectable: true,
+                hasControls: true
+            });
+            
+            // 创建组合对象
+            const group = new fabric.Group([circle, text], {
+                selectable: true,
+                hasControls: true,
+                cornerStyle: 'circle',
+                transparentCorners: false
+            });
+            
+            canvas.add(group);
+            currentFrames.push(group);
             canvas.renderAll();
             
-            showStatus('相框添加成功！');
+            showStatus(`${getPositionName(currentFramePosition)}装饰添加成功！`);
         }
 
-        // 从URL加载相框
+        // 从URL加载装饰
         function loadFrameFromURL(url) {
             fabric.Image.fromURL(url, function(img) {
-                // 让相框图片覆盖整个画布，并设置为半透明
+                let left, top, scale;
+                
+                // 根据位置设置图片位置和大小
+                switch(currentFramePosition) {
+                    case 'top-left':
+                        left = 20;
+                        top = 20;
+                        scale = 0.15;
+                        break;
+                    case 'top-right':
+                        left = canvas.width - 120;
+                        top = 20;
+                        scale = 0.15;
+                        break;
+                    case 'bottom-left':
+                        left = 20;
+                        top = canvas.height - 120;
+                        scale = 0.15;
+                        break;
+                    case 'bottom-right':
+                        left = canvas.width - 120;
+                        top = canvas.height - 120;
+                        scale = 0.15;
+                        break;
+                }
+                
                 img.set({
-                    left: 0,
-                    top: 0,
-                    width: canvas.width,
-                    height: canvas.height,
-                    selectable: false,
-                    evented: false,
-                    originX: 'left',
-                    originY: 'top',
-                    opacity: 0.7 // 设置透明度，让Zoom截图能透出来
+                    left: left,
+                    top: top,
+                    scaleX: scale,
+                    scaleY: scale,
+                    selectable: true,
+                    hasControls: true,
+                    cornerStyle: 'circle',
+                    transparentCorners: false
                 });
                 
-                applyFrame(img);
+                canvas.add(img);
+                currentFrames.push(img);
+                canvas.renderAll();
+                
+                showStatus(`${getPositionName(currentFramePosition)}装饰添加成功！`);
             });
         }
 
-        // 添加自定义相框
+        // 添加自定义装饰
         function addCustomFrame() {
             const url = document.getElementById('customFrameUrl').value.trim();
             if (!url) {
@@ -728,7 +865,7 @@
             document.getElementById('customFrameUrl').value = '';
         }
 
-        // 添加手势图案（使用emoji）
+        // 添加手势图案
         function addSticker(emoji) {
             const text = new fabric.Text(emoji, {
                 left: 50 + Math.random() * 100,
@@ -809,7 +946,7 @@
         function clearAll() {
             canvas.clear();
             backgroundImage = null;
-            currentFrame = null;
+            currentFrames = [];
             textbox1 = null;
             textbox2 = null;
             document.getElementById('fileName').textContent = '未选择文件';
