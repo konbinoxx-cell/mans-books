@@ -640,38 +640,41 @@
             }
         });
 
-        // 加载预设相框
+        // 加载预设相框 - 宽度增加为原来的两倍
         function loadFrame(type) {
-            // 使用简单的CSS边框作为预设
-            let frameStyle = '';
-            let frameColor = '';
+            let frameWidth, frameColor, frameStyle;
+            
             switch(type) {
                 case 'classic':
-                    frameStyle = '20px solid';
+                    frameWidth = 40;  // 原来是20，现在40
                     frameColor = '#8B4513';
+                    frameStyle = 'solid';
                     break;
                 case 'modern':
-                    frameStyle = '15px double';
+                    frameWidth = 30;  // 原来是15，现在30
                     frameColor = '#2c3e50';
+                    frameStyle = 'double';
                     break;
                 case 'elegant':
-                    frameStyle = '25px ridge';
+                    frameWidth = 50;  // 原来是25，现在50
                     frameColor = '#d4af37';
+                    frameStyle = 'ridge';
                     break;
                 case 'minimal':
-                    frameStyle = '5px solid';
+                    frameWidth = 10;  // 原来是5，现在10
                     frameColor = '#34495e';
+                    frameStyle = 'solid';
                     break;
             }
             
-            // 创建矩形作为相框
+            // 创建更宽的相框
             const frame = new fabric.Rect({
                 width: canvas.width,
                 height: canvas.height,
                 fill: 'transparent',
                 stroke: frameColor,
-                strokeWidth: parseInt(frameStyle),
-                strokeDashArray: type === 'modern' ? [10, 5] : undefined,
+                strokeWidth: frameWidth,
+                strokeDashArray: type === 'modern' ? [15, 8] : undefined, // 也相应加宽虚线
                 selectable: false,
                 evented: false
             });
@@ -696,6 +699,7 @@
         // 从URL加载相框
         function loadFrameFromURL(url) {
             fabric.Image.fromURL(url, function(img) {
+                // 让相框图片覆盖整个画布
                 img.set({
                     left: 0,
                     top: 0,
