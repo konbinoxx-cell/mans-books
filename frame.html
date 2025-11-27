@@ -1,848 +1,617 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>讀書會圖片編輯器</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            color: #333;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: #2c3e50;
-            color: white;
-            padding: 25px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.2em;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-        
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-        
-        .content {
-            display: flex;
-            min-height: 700px;
-        }
-        
-        .sidebar {
-            width: 350px;
-            background: #f8f9fa;
-            padding: 25px;
-            border-right: 1px solid #e9ecef;
-            overflow-y: auto;
-        }
-        
-        .main-content {
-            flex: 1;
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-        }
-        
-        .upload-area {
-            border: 3px dashed #667eea;
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-            margin-bottom: 25px;
-            background: #f8f9ff;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .upload-area:hover {
-            background: #eef2ff;
-            border-color: #764ba2;
-            transform: translateY(-2px);
-        }
-        
-        .upload-area h3 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 1.3em;
-        }
-        
-        .upload-area p {
-            color: #666;
-            margin-bottom: 15px;
-        }
-        
-        .file-input-info {
-            background: #e9ecef;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 0.9em;
-            color: #666;
-        }
-        
-        .control-group {
-            margin-bottom: 30px;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .control-group h3 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #667eea;
-            font-size: 1.2em;
-            font-weight: 600;
-        }
-        
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            margin: 8px 0;
-            transition: all 0.3s ease;
-            width: 100%;
-            font-weight: 500;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        }
-        
-        .btn-info {
-            background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
-        }
-        
-        .frame-preview {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin: 15px 0;
-        }
-        
-        .frame-item {
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            padding: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            background: white;
-        }
-        
-        .frame-item:hover {
-            border-color: #667eea;
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
-        }
-        
-        .frame-item.active {
-            border-color: #667eea;
-            background: #eef2ff;
-            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
-        }
-        
-        .frame-preview-img {
-            width: 100%;
-            height: 60px;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            margin-bottom: 8px;
-            font-size: 12px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        }
-        
-        .frame-name {
-            font-size: 12px;
-            color: #666;
-            font-weight: 500;
-        }
-        
-        .custom-frame-input {
-            display: flex;
-            gap: 10px;
-            margin: 15px 0;
-        }
-        
-        .custom-frame-input input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-        
-        .custom-frame-input button {
-            padding: 10px 20px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .custom-frame-input button:hover {
-            background: #5a6fd8;
-            transform: translateY(-1px);
-        }
-        
-        .sticker-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin: 15px 0;
-        }
-        
-        .sticker-btn {
-            padding: 12px;
-            background: white;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-        
-        .sticker-btn:hover {
-            border-color: #667eea;
-            background: #f8f9ff;
-            transform: translateY(-2px);
-        }
-        
-        .color-picker {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin: 15px 0;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-        
-        .color-picker label {
-            font-size: 14px;
-            color: #666;
-            font-weight: 500;
-            min-width: 60px;
-        }
-        
-        .color-picker input {
-            width: 50px;
-            height: 40px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .color-picker input:hover {
-            border-color: #667eea;
-            transform: scale(1.1);
-        }
-        
-        .canvas-container {
-            border: 3px solid #e9ecef;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            background: #f8f9fa;
-            min-height: 500px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            width: 100%;
-        }
-        
-        #canvas {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .paste-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            color: white;
-            z-index: 1000;
-            border-radius: 12px;
-        }
-        
-        .paste-overlay h2 {
-            font-size: 2em;
-            margin-bottom: 15px;
-            color: #667eea;
-        }
-        
-        .paste-overlay p {
-            font-size: 1.2em;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        
-        .paste-overlay.hidden {
-            display: none;
-        }
-        
-        .instruction {
-            font-size: 14px;
-            color: #666;
-            margin-top: 15px;
-            text-align: center;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            width: 100%;
-        }
-        
-        .status-message {
-            margin-top: 15px;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 14px;
-            font-weight: 500;
-            width: 100%;
-        }
-        
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .hidden {
-            display: none;
-        }
-        
-        input[type="file"] {
-            display: none;
-        }
-        
-        .btn-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin: 10px 0;
-        }
-        
-        /* 響應式設計 */
-        @media (max-width: 1200px) {
-            .content {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                border-right: none;
-                border-bottom: 1px solid #e9ecef;
-            }
-            
-            .main-content {
-                width: 100%;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                margin: 10px;
-                border-radius: 10px;
-            }
-            
-            .header {
-                padding: 20px;
-            }
-            
-            .header h1 {
-                font-size: 1.8em;
-            }
-            
-            .sidebar, .main-content {
-                padding: 15px;
-            }
-            
-            .frame-preview {
-                grid-template-columns: 1fr;
-            }
-            
-            .sticker-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .btn-row {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>弟兄讀書會 Zoom 圖片編輯器（本地版）</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 20px;
+      font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+      background: radial-gradient(circle at 20% 20%, #f0f4ff 0%, #e9ecff 35%, #e7e7f9 100%);
+      color: #2c3e50;
+    }
+    .container {
+      max-width: 1400px; margin: 0 auto;
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.1); overflow: hidden;
+      border: 1px solid #e6e8f2;
+    }
+    .header {
+      background: linear-gradient(135deg,#2c3e50,#3b4a5e);
+      color: #fff; padding: 22px; text-align: center;
+    }
+    .header h1 { margin: 0 0 8px; font-size: 22px; font-weight: 600; letter-spacing: 0.5px; }
+    .header p { margin: 0; opacity: 0.9; font-size: 13px; }
+    .content { display: grid; grid-template-columns: 360px 1fr; gap: 0; min-height: 680px; }
+    .sidebar {
+      background: #f7f8fc; border-right: 1px solid #edf0f7; padding: 18px;
+      overflow-y: auto;
+    }
+    .group { background: #fff; border: 1px solid #eceff6; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+    .group h3 {
+      margin: 0 0 10px; font-size: 14px; color: #3b4a5e;
+      border-bottom: 2px solid #6a7deb33; padding-bottom: 6px; font-weight: 600;
+    }
+    .upload {
+      border: 2px dashed #6a7deb; border-radius: 12px; padding: 14px; text-align: center;
+      background: #f0f3ff; cursor: pointer;
+    }
+    .upload:hover { background: #e9edff; }
+    .file-name { font-size: 12px; color: #667; margin-top: 6px; }
+    .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .preset { padding: 8px; border: 1px solid #e5e9f4; border-radius: 8px; background: #fff; cursor: pointer; text-align: center; font-size: 12px; }
+    .preset:hover { border-color: #6a7deb; background: #f7f9ff; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 6px; }
+    .row label { font-size: 11px; color: #556; }
+    input[type="color"], input[type="number"], select {
+      width: 100%; padding: 6px; border: 1px solid #dfe3ee; border-radius: 6px; background: #fff; font-size: 11px;
+    }
+    .emoji-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .emoji-btn {
+      border: 1px solid #e5e9f4; background: #fff; border-radius: 8px; padding: 8px; cursor: pointer; font-size: 16px;
+    }
+    .emoji-btn:hover { border-color: #6a7deb; background: #f7f9ff; }
+    .text-row { display: grid; grid-template-columns: 2fr 1fr; gap: 6px; }
+    .btn {
+      width: 100%; border: none; border-radius: 8px; padding: 8px; cursor: pointer; font-size: 12px;
+      color: #fff; background: linear-gradient(135deg,#6a7deb,#8b6ad6);
+      box-shadow: 0 4px 12px rgba(106,125,235,0.25);
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-secondary { background: linear-gradient(135deg,#8793a8,#6c7a90); }
+    .btn-success { background: linear-gradient(135deg,#22b573,#1fae66); }
+    .main {
+      padding: 18px; display: flex; flex-direction: column; height: 100%;
+    }
+    .canvas-wrap {
+      width: 100%; max-width: 100%; flex: 1;
+      border: 2px solid #edf0f7; border-radius: 14px; background: #fafbff;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.08); padding: 12px;
+      display: flex; flex-direction: column;
+    }
+    canvas { background: #fff; border-radius: 10px; flex: 1; }
+    .status { margin-top: 8px; font-size: 11px; color: #3b4a5e; text-align: center; }
+    .chip {
+      display: inline-block; padding: 4px 8px; border-radius: 999px; background: #f0f3ff; color: #445; font-size: 11px; border: 1px solid #e2e6fb;
+    }
+    .small { font-size: 10px; color: #667; }
+    
+    /* 底部控制区样式 */
+    .bottom-controls {
+      margin-top: 10px;
+      padding: 12px;
+      background: #fff;
+      border: 1px solid #eceff6;
+      border-radius: 12px;
+    }
+    
+    .frame-controls-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    
+    .frame-side-control {
+      background: #f7f8fc;
+      border-radius: 8px;
+      padding: 10px;
+    }
+    
+    .frame-side-control h4 {
+      margin: 0 0 6px 0;
+      font-size: 12px;
+      color: #3b4a5e;
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .content {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #e0e4f0;
+      }
+      .main-content, .canvas-wrap {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+      }
+      canvas {
+        width: 100%;
+        height: auto;
+      }
+      .control-group, .upload-area {
+        margin-bottom: 20px;
+      }
+      .frame-preview, .sticker-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .frame-controls-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📚 讀書會圖片編輯器</h1>
-            <p>為Zoom截圖添加相框、手勢圖案和文字框 - 開箱即用，無需安裝</p>
-        </div>
-        
-        <div class="content">
-            <!-- 左側控制面板 -->
-            <div class="sidebar">
-                <div class="upload-area" onclick="document.getElementById('imageUpload').click()">
-                    <h3>📁 上傳Zoom截圖</h3>
-                    <p>點擊或拖拽圖片到這裡</p>
-                    <div class="file-input-info">
-                        <span id="fileName">未選擇檔案</span>
-                    </div>
-                    <input type="file" id="imageUpload" accept="image/*" class="hidden">
-                </div>
-                
-                <div class="control-group">
-                    <h3>🎨 相框設定</h3>
-                    <button class="btn btn-info" onclick="enablePasteMode()">📋 直接貼上相框圖片</button>
-                    
-                    <div class="frame-preview">
-                        <div class="frame-item" onclick="loadFrame('classic')">
-                            <div class="frame-preview-img">古典相框</div>
-                            <div class="frame-name">古典相框</div>
-                        </div>
-                        <div class="frame-item" onclick="loadFrame('modern')">
-                            <div class="frame-preview-img">現代相框</div>
-                            <div class="frame-name">現代相框</div>
-                        </div>
-                        <div class="frame-item" onclick="loadFrame('elegant')">
-                            <div class="frame-preview-img">優雅相框</div>
-                            <div class="frame-name">優雅相框</div>
-                        </div>
-                        <div class="frame-item" onclick="loadFrame('minimal')">
-                            <div class="frame-preview-img">簡約相框</div>
-                            <div class="frame-name">簡約相框</div>
-                        </div>
-                    </div>
-                    
-                    <div class="custom-frame-input">
-                        <input type="text" id="customFrameUrl" placeholder="輸入相框圖片網址...">
-                        <button onclick="addCustomFrame()">添加相框</button>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <h3>👐 手勢圖案</h3>
-                    <div class="sticker-grid">
-                        <button class="sticker-btn" onclick="addSticker('🙌')">🙌 讚美</button>
-                        <button class="sticker-btn" onclick="addSticker('🙏')">🙏 祈禱</button>
-                        <button class="sticker-btn" onclick="addSticker('🎉')">🎉 慶祝</button>
-                        <button class="sticker-btn" onclick="addSticker('❤️')">❤️ 愛心</button>
-                        <button class="sticker-btn" onclick="addSticker('⭐')">⭐ 星星</button>
-                        <button class="sticker-btn" onclick="addSticker('📚')">📚 書籍</button>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <h3>📝 文字框</h3>
-                    <div class="btn-row">
-                        <button class="btn" onclick="addTextBox()">添加文字框</button>
-                        <button class="btn" onclick="addTextBox2()">添加第二個文字框</button>
-                    </div>
-                    
-                    <div class="color-picker">
-                        <label>背景色:</label>
-                        <input type="color" id="textBgColor" value="#ffffff">
-                        <label>文字色:</label>
-                        <input type="color" id="textColor" value="#2c3e50">
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <h3>🛠️ 工具</h3>
-                    <div class="btn-row">
-                        <button class="btn btn-secondary" onclick="clearAll()">清除所有</button>
-                        <button class="btn btn-success" onclick="downloadImage()">💾 下載圖片</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 右側主內容區 -->
-            <div class="main-content">
-                <div class="canvas-container">
-                    <canvas id="canvas" width="800" height="500"></canvas>
-                    <div id="pasteOverlay" class="paste-overlay hidden">
-                        <h2>📋 貼上模式已啟動</h2>
-                        <p>請按 Ctrl+V 貼上相框圖片</p>
-                        <button class="btn" onclick="disablePasteMode()" style="margin-top: 20px;">取消貼上</button>
-                    </div>
-                </div>
-                
-                <div class="instruction">
-                    💡 使用步驟: 1. 上傳Zoom截圖 → 2. 添加相框 → 3. 添加手勢 → 4. 添加文字 → 5. 下載
-                </div>
-                
-                <div id="statusMessage" class="status-message hidden"></div>
-            </div>
-        </div>
+  <div class="container">
+    <div class="header">
+      <h1>弟兄讀書會 Zoom 圖片編輯器（本地版）</h1>
+      <p>上傳截圖 → 相框 → 手勢圖案 → 文字 → 一鍵下載</p>
     </div>
+    <div class="content">
+      <aside class="sidebar">
+        <div class="group upload" onclick="document.getElementById('file').click()">
+          <div>📁 上傳 Zoom 截圖</div>
+          <input id="file" type="file" accept="image/*" style="display:none">
+          <div class="file-name" id="fileName">未選擇檔案</div>
+        </div>
 
-    <script>
-        // 初始化畫布
-        const canvas = new fabric.Canvas('canvas');
-        let backgroundImage = null;
-        let currentFrame = null;
-        let textbox1 = null;
-        let textbox2 = null;
-        let pasteMode = false;
+        <div class="group">
+          <h3>🎨 預設相框</h3>
+          <div class="preset-grid">
+            <button class="preset" onclick="applyPreset('glory')">榮耀金框</button>
+            <button class="preset" onclick="applyPreset('elegant')">尊貴紫框</button>
+            <button class="preset" onclick="applyPreset('minimal')">簡約白框</button>
+            <button class="preset" onclick="applyPreset('fresh')">清新藍框</button>
+          </div>
+        </div>
 
-        // 顯示狀態訊息
-        function showStatus(message, type = 'success') {
-            const statusEl = document.getElementById('statusMessage');
-            statusEl.textContent = message;
-            statusEl.className = `status-message ${type}`;
-            statusEl.classList.remove('hidden');
+        <div class="group">
+          <h3>👐 手勢圖案 / 屬靈符號</h3>
+          <div class="emoji-grid">
+            <button class="emoji-btn" onclick="addEmoji('🙌')">🙌 讚美</button>
+            <button class="emoji-btn" onclick="addEmoji('🙏')">🙏 禱告</button>
+            <button class="emoji-btn" onclick="addEmoji('👏')">👏 鼓掌</button>
+            <button class="emoji-btn" onclick="addEmoji('✌️')">✌️ 喜樂</button>
+            <button class="emoji-btn" onclick="addEmoji('✝️')">✝️ 十字架</button>
+            <button class="emoji-btn" onclick="addEmoji('🌿')">🌿 橄欖枝</button>
+            <button class="emoji-btn" onclick="addEmoji('🔥')">🔥 火焰</button>
+            <button class="emoji-btn" onclick="addEmoji('👋')">👋 揮手</button>
+          </div>
+        </div>
+
+        <div class="group">
+          <h3>📝 文字框</h3>
+          <div class="text-row">
+            <input id="textInput" type="text" placeholder="輸入文字，例如：主日信息、為你禱告" />
+            <button class="btn-secondary btn" onclick="addText()">加入文字</button>
+          </div>
+          <div class="row" style="margin-top:6px">
+            <label>文字顏色</label><input type="color" id="textColor" value="#2c3e50" />
+          </div>
+          <div class="row3">
+            <label>字體大小</label><input type="number" id="fontSize" value="28" min="10" max="120" />
+            <select id="fontWeight">
+              <option value="normal">標準</option>
+              <option value="bold">粗體</option>
+            </select>
+            <select id="textBg">
+              <option value="none">無背景</option>
+              <option value="chip">圓角膠囊</option>
+              <option value="plate">淡色底板</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="group">
+          <h3>📥 匯出</h3>
+          <button class="btn-success btn" onclick="download()">下載 PNG</button>
+          <div class="status" id="status">準備就緒</div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="canvas-wrap">
+          <canvas id="c" width="960" height="540"></canvas>
+        </div>
+
+        <!-- 底部控制区：四边自订相框 -->
+        <div class="bottom-controls">
+          <h3 style="margin-top: 0; font-size: 14px;">🌈 四邊自訂相框</h3>
+          <div class="frame-controls-grid">
+            <!-- 上边框控制 -->
+            <div class="frame-side-control">
+              <h4>上邊框</h4>
+              <div class="row">
+                <label>顏色</label><input type="color" id="topColor" value="#d4af37">
+              </div>
+              <div class="row">
+                <label>寬度(px)</label><input type="number" id="topWidth" value="16" min="0">
+              </div>
+              <div class="row">
+                <label>樣式</label>
+                <select id="topStyle">
+                  <option value="solid">實線</option>
+                  <option value="dash">虛線</option>
+                  <option value="dot">點線</option>
+                  <option value="gradient">漸變</option>
+                </select>
+              </div>
+            </div>
             
-            setTimeout(() => {
-                statusEl.classList.add('hidden');
-            }, 3000);
+            <!-- 下边框控制 -->
+            <div class="frame-side-control">
+              <h4>下邊框</h4>
+              <div class="row">
+                <label>顏色</label><input type="color" id="bottomColor" value="#d4af37">
+              </div>
+              <div class="row">
+                <label>寬度(px)</label><input type="number" id="bottomWidth" value="16" min="0">
+              </div>
+              <div class="row">
+                <label>樣式</label>
+                <select id="bottomStyle">
+                  <option value="solid">實線</option>
+                  <option value="dash">虛線</option>
+                  <option value="dot">點線</option>
+                  <option value="gradient">漸變</option>
+                </select>
+              </div>
+            </div>
+            
+            <!-- 左边框控制 -->
+            <div class="frame-side-control">
+              <h4>左邊框</h4>
+              <div class="row">
+                <label>顏色</label><input type="color" id="leftColor" value="#d4af37">
+              </div>
+              <div class="row">
+                <label>寬度(px)</label><input type="number" id="leftWidth" value="16" min="0">
+              </div>
+              <div class="row">
+                <label>樣式</label>
+                <select id="leftStyle">
+                  <option value="solid">實線</option>
+                  <option value="dash">虛線</option>
+                  <option value="dot">點線</option>
+                  <option value="gradient">漸變</option>
+                </select>
+              </div>
+            </div>
+            
+            <!-- 右边框控制 -->
+            <div class="frame-side-control">
+              <h4>右邊框</h4>
+              <div class="row">
+                <label>顏色</label><input type="color" id="rightColor" value="#d4af37">
+              </div>
+              <div class="row">
+                <label>寬度(px)</label><input type="number" id="rightWidth" value="16" min="0">
+              </div>
+              <div class="row">
+                <label>樣式</label>
+                <select id="rightStyle">
+                  <option value="solid">實線</option>
+                  <option value="dash">虛線</option>
+                  <option value="dot">點線</option>
+                  <option value="gradient">漸變</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div style="text-align: center;">
+            <button class="btn" onclick="applyCustomFrame()" style="width: auto; padding: 6px 16px; font-size: 12px;">應用四邊相框</button>
+          </div>
+          <div class="small" style="text-align: center; margin-top: 6px;">提示：相框始終置頂；下載結果與畫布一致。</div>
+        </div>
+
+        <div class="status"><span class="chip">畫布：960 × 540</span></div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // Core state
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const statusEl = document.getElementById('status');
+
+    const state = {
+      bgImage: null,
+      elements: [], // {type: 'emoji'|'text'|'frame-segment', ...}
+      frame: { top: {}, bottom: {}, left: {}, right: {} },
+    };
+
+    function setStatus(msg) { statusEl.textContent = msg; }
+
+    // Image handling
+    document.getElementById('file').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('fileName').textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          state.bgImage = img;
+          fitImageToCanvas(img);
+          redraw();
+          setStatus('✅ 圖片已載入');
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function fitImageToCanvas(img) {
+      // Scale to fit into canvas bounds, center
+      const cw = canvas.width, ch = canvas.height;
+      const iw = img.width, ih = img.height;
+      const scale = Math.min(cw / iw, ch / ih)*0.85;
+      const w = iw * scale, h = ih * scale;
+      state.bgRect = { x: (cw - w)/2, y: (ch - h)/2, w, h };
+    }
+
+    // Drawing primitives
+    function clearCanvas() { ctx.clearRect(0,0,canvas.width,canvas.height); }
+
+    function drawImage() {
+      if (!state.bgImage || !state.bgRect) return;
+      const r = state.bgRect;
+      ctx.drawImage(state.bgImage, r.x, r.y, r.w, r.h);
+    }
+
+    function drawFrameSide(side, opt) {
+      const { color, width, style, gradientFrom, gradientTo } = opt;
+      if (!width || width <= 0) return;
+
+      let strokeStyle = color;
+      if (style === 'gradient') {
+        const g = (side === 'top' || side === 'bottom')
+          ? ctx.createLinearGradient(0, 0, canvas.width, 0)
+          : ctx.createLinearGradient(0, 0, 0, canvas.height);
+        g.addColorStop(0, gradientFrom || color);
+        g.addColorStop(1, gradientTo || '#ffffff');
+        strokeStyle = g;
+      }
+
+      ctx.save();
+      ctx.lineWidth = width;
+      ctx.strokeStyle = strokeStyle;
+      if (style === 'dash') ctx.setLineDash([14,8]);
+      if (style === 'dot') ctx.setLineDash([3,6]);
+
+      // Align to pixel to avoid blur
+      const half = width / 2;
+      if (side === 'top') {
+        ctx.beginPath(); ctx.moveTo(0, half); ctx.lineTo(canvas.width, half); ctx.stroke();
+      } else if (side === 'bottom') {
+        ctx.beginPath(); ctx.moveTo(0, canvas.height - half); ctx.lineTo(canvas.width, canvas.height - half); ctx.stroke();
+      } else if (side === 'left') {
+        ctx.beginPath(); ctx.moveTo(half, 0); ctx.lineTo(half, canvas.height); ctx.stroke();
+      } else if (side === 'right') {
+        ctx.beginPath(); ctx.moveTo(canvas.width - half, 0); ctx.lineTo(canvas.width - half, canvas.height); ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawEmoji(el) {
+      ctx.save();
+      ctx.font = `${el.size}px system-ui, Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji`;
+      ctx.textBaseline = 'top';
+      ctx.fillText(el.text, el.x, el.y);
+      ctx.restore();
+    }
+
+    function drawText(el) {
+      ctx.save();
+      ctx.font = `${el.weight} ${el.size}px "Microsoft JhengHei","PingFang TC",sans-serif`;
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = el.color;
+
+      if (el.bg && el.bg !== 'none') {
+        const m = ctx.measureText(el.text);
+        const w = m.width + 16, h = el.size + 12;
+        const x = el.x - 8, y = el.y - 6;
+        if (el.bg === 'chip') {
+          roundRect(ctx, x, y, w, h, 999, '#f0f3ff', '#e2e6fb');
+        } else if (el.bg === 'plate') {
+          roundRect(ctx, x, y, w, h, 10, '#f8f9ff', '#e9edf8');
         }
+      }
 
-        // 檔案上傳處理
-        document.getElementById('imageUpload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            // 顯示檔案名稱
-            document.getElementById('fileName').textContent = file.name;
-            
-            const reader = new FileReader();
-            reader.onload = function(f) {
-                fabric.Image.fromURL(f.target.result, function(img) {
-                    // 移除之前的背景圖片
-                    if (backgroundImage) {
-                        canvas.remove(backgroundImage);
-                    }
-                    
-                    // 調整圖片大小適應畫布
-                    const scale = Math.min(
-                        (canvas.width * 0.8) / img.width,
-                        (canvas.height * 0.8) / img.height
-                    );
-                    
-                    img.set({
-                        left: canvas.width / 2,
-                        top: canvas.height / 2,
-                        scaleX: scale,
-                        scaleY: scale,
-                        originX: 'center',
-                        originY: 'center',
-                        selectable: true,
-                        hasControls: true,
-                        cornerStyle: 'circle',
-                        transparentCorners: false,
-                        lockUniScaling: false
-                    });
-                    
-                    canvas.add(img);
-                    canvas.sendToBack(img);
-                    backgroundImage = img;
-                    canvas.renderAll();
-                    
-                    showStatus('Zoom截圖上傳成功！可以拖拽調整位置和大小');
-                });
-            };
-            reader.readAsDataURL(file);
+      ctx.fillText(el.text, el.x, el.y);
+      ctx.restore();
+    }
+
+    function roundRect(ctx, x, y, w, h, r, fill, stroke) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+      if (stroke) { ctx.strokeStyle = stroke; ctx.stroke(); }
+      ctx.restore();
+    }
+
+    // Redraw pipeline
+    function redraw() {
+      clearCanvas();
+      drawImage();
+      // content
+      for (const el of state.elements) {
+        if (el.type === 'emoji') drawEmoji(el);
+        if (el.type === 'text') drawText(el);
+      }
+      // frame on top
+      drawFrameSide('top', state.frame.top);
+      drawFrameSide('bottom', state.frame.bottom);
+      drawFrameSide('left', state.frame.left);
+      drawFrameSide('right', state.frame.right);
+    }
+
+    // Preset frames
+    function applyPreset(name) {
+      if (name === 'glory') {
+        setFrameAll({
+          color: '#d4af37', width: 18, style: 'gradient',
+          gradientFrom: '#f9e27d', gradientTo: '#c08c2a'
         });
-
-        // 貼上相框功能
-        function enablePasteMode() {
-            pasteMode = true;
-            document.getElementById('pasteOverlay').classList.remove('hidden');
-            showStatus('請按 Ctrl+V 貼上相框圖片');
-        }
-
-        function disablePasteMode() {
-            pasteMode = false;
-            document.getElementById('pasteOverlay').classList.add('hidden');
-        }
-
-        document.addEventListener('paste', function(e) {
-            if (!pasteMode) return;
-            
-            e.preventDefault();
-            disablePasteMode();
-            
-            const items = e.clipboardData.items;
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].type.indexOf('image') !== -1) {
-                    const blob = items[i].getAsFile();
-                    const reader = new FileReader();
-                    
-                    reader.onload = function(event) {
-                        loadFrameFromURL(event.target.result);
-                    };
-                    reader.readAsDataURL(blob);
-                    break;
-                }
-            }
+      } else if (name === 'elegant') {
+        setFrameAll({
+          color: '#7a5fd1', width: 16, style: 'gradient',
+          gradientFrom: '#b29dff', gradientTo: '#5b3fb3'
         });
+      } else if (name === 'minimal') {
+        setFrameAll({ color: '#ffffff', width: 14, style: 'solid' });
+      } else if (name === 'fresh') {
+        setFrameAll({
+          color: '#3b82f6', width: 16, style: 'dash'
+        });
+      }
+      redraw();
+      setStatus('🎨 已套用預設相框');
+    }
 
-        // 載入預設相框 - 完整的四周相框
-        function loadFrame(type) {
-            let frameWidth, frameColor, frameStyle;
-            
-            switch(type) {
-                case 'classic':
-                    frameWidth = 40;
-                    frameColor = '#8B4513';
-                    frameStyle = 'solid';
-                    break;
-                case 'modern':
-                    frameWidth = 30;
-                    frameColor = '#2c3e50';
-                    frameStyle = 'double';
-                    break;
-                case 'elegant':
-                    frameWidth = 50;
-                    frameColor = '#d4af37';
-                    frameStyle = 'ridge';
-                    break;
-                case 'minimal':
-                    frameWidth = 10;
-                    frameColor = '#34495e';
-                    frameStyle = 'solid';
-                    break;
-            }
-            
-            // 創建完整的四周相框
-            const frame = new fabric.Rect({
-                width: canvas.width,
-                height: canvas.height,
-                fill: 'transparent',
-                stroke: frameColor,
-                strokeWidth: frameWidth,
-                strokeDashArray: type === 'modern' ? [15, 8] : undefined,
-                selectable: false,
-                evented: false
-            });
-            
-            applyFrame(frame);
+    function setFrameAll(opt) {
+      state.frame.top = { ...opt };
+      state.frame.bottom = { ...opt };
+      state.frame.left = { ...opt };
+      state.frame.right = { ...opt };
+    }
+
+    // Custom frame
+    function applyCustomFrame() {
+      state.frame.top = {
+        color: document.getElementById('topColor').value,
+        width: +document.getElementById('topWidth').value,
+        style: document.getElementById('topStyle').value,
+        gradientFrom: document.getElementById('topColor').value,
+        gradientTo: '#ffffff'
+      };
+      state.frame.bottom = {
+        color: document.getElementById('bottomColor').value,
+        width: +document.getElementById('bottomWidth').value,
+        style: document.getElementById('bottomStyle').value,
+        gradientFrom: document.getElementById('bottomColor').value,
+        gradientTo: '#ffffff'
+      };
+      state.frame.left = {
+        color: document.getElementById('leftColor').value,
+        width: +document.getElementById('leftWidth').value,
+        style: document.getElementById('leftStyle').value,
+        gradientFrom: document.getElementById('leftColor').value,
+        gradientTo: '#ffffff'
+      };
+      state.frame.right = {
+        color: document.getElementById('rightColor').value,
+        width: +document.getElementById('rightWidth').value,
+        style: document.getElementById('rightStyle').value,
+        gradientFrom: document.getElementById('rightColor').value,
+        gradientTo: '#ffffff'
+      };
+      redraw();
+      setStatus('🌈 已應用自訂四邊相框');
+    }
+
+    // Add emoji
+    function addEmoji(text) {
+      const el = { type: 'emoji', text, x: 15, y: 15, size: 56 };
+      state.elements.push(el);
+      attachDrag(el);
+      redraw();
+      setStatus('👐 已加入手勢圖案/符號');
+    }
+
+    // Add text
+    function addText() {
+      const text = document.getElementById('textInput').value.trim();
+      if (!text) return;
+      const color = document.getElementById('textColor').value;
+      const size = +document.getElementById('fontSize').value;
+      const weight = document.getElementById('fontWeight').value;
+      const bg = document.getElementById('textBg').value;
+  	  ctx.font = `${weight} ${size}px "Microsoft JhengHei","PingFang TC",sans-serif`;
+	  const el = {
+				  type: 'text',
+				  text,
+				  size,
+				  color,
+				  weight,
+				  bg,
+				  x: (canvas.width - ctx.measureText(text).width) / 2,
+				  y: canvas.height - size - 20
+				};
+		state.elements.push(el);
+      attachDrag(el);
+      redraw();
+      setStatus('📝 已加入文字');
+    }
+
+    // Simple drag system for elements
+    let dragTarget = null;
+    let dragOffset = { x: 0, y: 0 };
+
+    canvas.addEventListener('mousedown', (e) => {
+      const pos = getMousePos(e);
+      dragTarget = hitTest(pos);
+      if (dragTarget) {
+        dragOffset.x = pos.x - dragTarget.x;
+        dragOffset.y = pos.y - dragTarget.y;
+      }
+    });
+    canvas.addEventListener('mousemove', (e) => {
+      if (!dragTarget) return;
+      const pos = getMousePos(e);
+      dragTarget.x = pos.x - dragOffset.x;
+      dragTarget.y = pos.y - dragOffset.y;
+      redraw();
+    });
+    canvas.addEventListener('mouseup', () => { dragTarget = null; });
+    canvas.addEventListener('mouseleave', () => { dragTarget = null; });
+
+    function getMousePos(e) {
+      const rect = canvas.getBoundingClientRect();
+      return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+
+    function hitTest(pos) {
+      // Naive hit-test: check text/emoji boxes
+      for (let i = state.elements.length - 1; i >= 0; i--) {
+        const el = state.elements[i];
+        if (el.type === 'emoji') {
+          // approximate emoji size box
+          const w = el.size, h = el.size;
+          if (pos.x >= el.x && pos.x <= el.x + w && pos.y >= el.y && pos.y <= el.y + h) return el;
+        } else if (el.type === 'text') {
+          ctx.save();
+          ctx.font = `${el.weight} ${el.size}px "Microsoft JhengHei","PingFang TC",sans-serif`;
+          const w = ctx.measureText(el.text).width;
+          ctx.restore();
+          const h = el.size + 8;
+          if (pos.x >= el.x && pos.x <= el.x + w && pos.y >= el.y && pos.y <= el.y + h) return el;
         }
+      }
+      return null;
+    }
 
-        // 應用相框
-        function applyFrame(newFrame) {
-            if (currentFrame) {
-                canvas.remove(currentFrame);
-            }
-            
-            canvas.add(newFrame);
-            canvas.sendToBack(newFrame); // 放在最底層
-            currentFrame = newFrame;
-            canvas.renderAll();
-            
-            showStatus('相框添加成功！已自動平鋪並放在最底層');
-        }
+    function attachDrag(el) {
+      // no-op placeholder (drag handled globally)
+    }
 
-        // 從URL載入相框
-        function loadFrameFromURL(url) {
-            fabric.Image.fromURL(url, function(img) {
-                // 讓相框圖片自動平鋪整個畫布
-                const scaleX = canvas.width / img.width;
-                const scaleY = canvas.height / img.height;
-                const scale = Math.max(scaleX, scaleY); // 確保完全覆蓋
-                
-                img.set({
-                    left: 0,
-                    top: 0,
-                    scaleX: scale,
-                    scaleY: scale,
-                    selectable: false,
-                    evented: false,
-                    originX: 'left',
-                    originY: 'top'
-                });
-                
-                applyFrame(img);
-            });
-        }
+    // Download
+    function download() {
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = 'zoom_edited.png';
+      a.click();
+      setStatus('✅ 已下載 PNG');
+    }
 
-        // 添加自訂相框
-        function addCustomFrame() {
-            const url = document.getElementById('customFrameUrl').value.trim();
-            if (!url) {
-                showStatus('請輸入圖片網址！', 'error');
-                return;
-            }
-            
-            loadFrameFromURL(url);
-            document.getElementById('customFrameUrl').value = '';
-        }
-
-        // 添加手勢圖案（使用emoji）
-        function addSticker(emoji) {
-            const text = new fabric.Text(emoji, {
-                left: 50 + Math.random() * 100,
-                top: 50 + Math.random() * 100,
-                fontSize: 60,
-                selectable: true,
-                hasControls: true,
-                cornerStyle: 'circle',
-                transparentCorners: false
-            });
-            
-            canvas.add(text);
-            canvas.renderAll();
-            showStatus('手勢圖案已添加！');
-        }
-
-        // 添加文字框
-        function addTextBox() {
-            const textContent = prompt('請輸入文字內容:', '歡迎參加讀書會');
-            if (!textContent) return;
-            
-            if (textbox1) {
-                canvas.remove(textbox1);
-            }
-            
-            textbox1 = new fabric.Textbox(textContent, {
-                left: canvas.width / 2 - 150,
-                top: canvas.height - 120,
-                width: 300,
-                fontSize: 24,
-                fill: document.getElementById('textColor').value,
-                fontFamily: 'Microsoft JhengHei, PingFang TC, sans-serif',
-                backgroundColor: document.getElementById('textBgColor').value,
-                padding: 15,
-                selectable: true,
-                hasControls: true,
-                textAlign: 'center',
-                cornerStyle: 'circle',
-                transparentCorners: false
-            });
-            
-            canvas.add(textbox1);
-            canvas.renderAll();
-            showStatus('文字框1已添加！');
-        }
-
-        // 添加第二個文字框
-        function addTextBox2() {
-            const textContent = prompt('請輸入第二個文字框內容:', '分享與成長');
-            if (!textContent) return;
-            
-            if (textbox2) {
-                canvas.remove(textbox2);
-            }
-            
-            textbox2 = new fabric.Textbox(textContent, {
-                left: canvas.width / 2 - 150,
-                top: 50,
-                width: 300,
-                fontSize: 20,
-                fill: document.getElementById('textColor').value,
-                fontFamily: 'Microsoft JhengHei, PingFang TC, sans-serif',
-                backgroundColor: document.getElementById('textBgColor').value,
-                padding: 10,
-                selectable: true,
-                hasControls: true,
-                textAlign: 'center',
-                cornerStyle: 'circle',
-                transparentCorners: false
-            });
-            
-            canvas.add(textbox2);
-            canvas.renderAll();
-            showStatus('文字框2已添加！');
-        }
-
-        // 清除所有
-        function clearAll() {
-            canvas.clear();
-            backgroundImage = null;
-            currentFrame = null;
-            textbox1 = null;
-            textbox2 = null;
-            document.getElementById('fileName').textContent = '未選擇檔案';
-            showStatus('已清除所有內容');
-        }
-
-        // 下載圖片
-        function downloadImage() {
-            if (canvas.getObjects().length === 0) {
-                showStatus('畫布為空，無法下載', 'error');
-                return;
-            }
-            
-            const link = document.createElement('a');
-            link.download = `讀書會圖片_${new Date().getTime()}.png`;
-            link.href = canvas.toDataURL({
-                format: 'png',
-                quality: 1
-            });
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            showStatus('圖片下載成功！');
-        }
-
-        // 初始提示
-        showStatus('歡迎使用讀書會圖片編輯器！請先上傳Zoom截圖');
-    </script>
+    // Initial frame (subtle minimal)
+    setFrameAll({ color: '#e6e8f2', width: 10, style: 'solid' });
+    redraw();
+  </script>
 </body>
 </html>
