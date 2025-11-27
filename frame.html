@@ -495,4 +495,501 @@
         showStatus('欢迎使用！请先设置背景');
     </script>
 </body>
+</html><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>读书会图片编辑器</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+        
+        .content {
+            display: flex;
+            min-height: 500px;
+        }
+        
+        .sidebar {
+            width: 180px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-right: 1px solid #e0e0e0;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1em;
+            border-bottom: 1px solid #3498db;
+            padding-bottom: 5px;
+        }
+        
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .btn {
+            flex: 1;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+        }
+        
+        .btn-success:hover {
+            background: #219a52;
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        .btn-warning {
+            background: #e67e22;
+        }
+        
+        .btn-warning:hover {
+            background: #d35400;
+        }
+        
+        .text-input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .text-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .color-label {
+            font-size: 12px;
+            color: #666;
+            min-width: 40px;
+        }
+        
+        .color-picker {
+            width: 30px;
+            height: 20px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .canvas-container {
+            border: 2px solid #bdc3c7;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #f8f9fa;
+            margin-bottom: 15px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #canvas {
+            background: white;
+        }
+        
+        .status-message {
+            margin-top: 10px;
+            padding: 6px;
+            border-radius: 3px;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>读书会图片编辑器</h1>
+        </div>
+        
+        <div class="content">
+            <!-- 左侧精简面板 -->
+            <div class="sidebar">
+                <!-- 背景设置 -->
+                <div class="control-group">
+                    <h3>背景设置</h3>
+                    <div class="btn-row">
+                        <button class="btn" onclick="document.getElementById('bgUpload').click()">读盘</button>
+                        <button class="btn" onclick="enablePasteMode('background')">粘贴</button>
+                    </div>
+                    <input type="file" id="bgUpload" accept="image/*">
+                </div>
+                
+                <!-- 手势设置 -->
+                <div class="control-group">
+                    <h3>手势设置</h3>
+                    <div class="btn-row">
+                        <button class="btn" onclick="document.getElementById('stickerUpload').click()">读盘</button>
+                        <button class="btn" onclick="enablePasteMode('sticker')">粘贴</button>
+                    </div>
+                    <button class="btn btn-warning" onclick="confirmSticker()">确认手势位置</button>
+                    <input type="file" id="stickerUpload" accept="image/*">
+                </div>
+                
+                <!-- 文字设置 -->
+                <div class="control-group">
+                    <h3>文字设置</h3>
+                    <input type="text" class="text-input" id="textInput" placeholder="输入文字内容" value="欢迎参加读书会">
+                    <div class="color-row">
+                        <span class="color-label">背景:</span>
+                        <input type="color" class="color-picker" id="textBgColor" value="#ffffff">
+                        <span class="color-label">文字:</span>
+                        <input type="color" class="color-picker" id="textColor" value="#2c3e50">
+                    </div>
+                    <button class="btn" onclick="addTextBox()">提交文字</button>
+                </div>
+                
+                <!-- 工具 -->
+                <div class="control-group">
+                    <h3>工具</h3>
+                    <div class="btn-row">
+                        <button class="btn btn-secondary" onclick="clearAll()">清理</button>
+                        <button class="btn btn-success" onclick="downloadImage()">下载</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧主画布 -->
+            <div class="main-content">
+                <div class="canvas-container">
+                    <canvas id="canvas" width="800" height="500"></canvas>
+                </div>
+                <div id="statusMessage" class="status-message hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化画布
+        const canvas = new fabric.Canvas('canvas');
+        let backgroundFrame = null;
+        let currentSticker = null;
+        let currentTextbox = null;
+        let pasteMode = null;
+        let stickerConfirmed = false;
+
+        // 显示状态消息
+        function showStatus(message, type = 'success') {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message ${type}`;
+            statusEl.classList.remove('hidden');
+            setTimeout(() => statusEl.classList.add('hidden'), 3000);
+        }
+
+        // 启用粘贴模式
+        function enablePasteMode(type) {
+            pasteMode = type;
+            showStatus(`请按 Ctrl+V 粘贴${type === 'background' ? '背景' : '手势'}图片`);
+        }
+
+        // 监听粘贴事件
+        document.addEventListener('paste', function(e) {
+            if (!pasteMode) return;
+            e.preventDefault();
+            
+            const items = e.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    const blob = items[i].getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        if (pasteMode === 'background') {
+                            loadBackground(event.target.result);
+                        } else {
+                            loadSticker(event.target.result);
+                        }
+                    };
+                    reader.readAsDataURL(blob);
+                    break;
+                }
+            }
+            pasteMode = null;
+        });
+
+        // 上传背景
+        document.getElementById('bgUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(f) {
+                loadBackground(f.target.result);
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        });
+
+        // 上传手势
+        document.getElementById('stickerUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(f) {
+                loadSticker(f.target.result);
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        });
+
+        // 加载背景 - 平铺整个画布
+        function loadBackground(imageData) {
+            fabric.Image.fromURL(imageData, function(newFrame) {
+                if (backgroundFrame) canvas.remove(backgroundFrame);
+                
+                // 背景平铺整个画布
+                const scaleX = canvas.width / newFrame.width;
+                const scaleY = canvas.height / newFrame.height;
+                const scale = Math.max(scaleX, scaleY);
+                
+                newFrame.set({
+                    left: 0, 
+                    top: 0, 
+                    scaleX: scale,
+                    scaleY: scale,
+                    selectable: false, 
+                    hasControls: false, 
+                    evented: false,
+                    lockMovementX: true, 
+                    lockMovementY: true,
+                    originX: 'left',
+                    originY: 'top'
+                });
+                
+                canvas.add(newFrame);
+                canvas.sendToBack(newFrame);
+                backgroundFrame = newFrame;
+                canvas.renderAll();
+                showStatus('背景设置成功！已平铺整个画布');
+            });
+        }
+
+        // 加载手势 - 放在左上角等待确认
+        function loadSticker(imageData) {
+            fabric.Image.fromURL(imageData, function(sticker) {
+                if (currentSticker) canvas.remove(currentSticker);
+                
+                sticker.set({
+                    left: 20,  // 放在左上角
+                    top: 20,
+                    scaleX: 0.15,
+                    scaleY: 0.15,
+                    selectable: true,
+                    hasControls: true,
+                    cornerStyle: 'circle',
+                    transparentCorners: false,
+                    lockMovementX: false, // 可以移动
+                    lockMovementY: false
+                });
+                
+                canvas.add(sticker);
+                currentSticker = sticker;
+                stickerConfirmed = false;
+                canvas.renderAll();
+                showStatus('手势已添加到左上角，请拖拽到合适位置后点击"确认手势位置"');
+            });
+        }
+
+        // 确认手势位置
+        function confirmSticker() {
+            if (currentSticker && !stickerConfirmed) {
+                currentSticker.set({
+                    lockMovementX: true,
+                    lockMovementY: true,
+                    selectable: false
+                });
+                stickerConfirmed = true;
+                canvas.renderAll();
+                showStatus('手势位置已确认！');
+            } else {
+                showStatus('没有需要确认的手势', 'error');
+            }
+        }
+
+        // 添加文字框
+        function addTextBox() {
+            const textContent = document.getElementById('textInput').value.trim();
+            if (!textContent) {
+                showStatus('请输入文字内容', 'error');
+                return;
+            }
+            
+            if (currentTextbox) canvas.remove(currentTextbox);
+            
+            const textbox = new fabric.Textbox(textContent, {
+                left: canvas.width / 2 - 150,
+                top: canvas.height - 100,
+                width: 300,
+                fontSize: 24,
+                fill: document.getElementById('textColor').value,
+                fontFamily: 'Microsoft YaHei',
+                backgroundColor: document.getElementById('textBgColor').value,
+                padding: 15,
+                borderColor: '#3498db',
+                cornerColor: '#3498db',
+                cornerStyle: 'circle',
+                transparentCorners: false,
+                selectable: true,
+                hasControls: true,
+                textAlign: 'center'
+            });
+            
+            canvas.add(textbox);
+            currentTextbox = textbox;
+            canvas.renderAll();
+            showStatus('文字框已添加！');
+        }
+
+        // 清理功能
+        function clearAll() {
+            const objects = canvas.getObjects();
+            objects.forEach(obj => {
+                canvas.remove(obj);
+            });
+            backgroundFrame = null;
+            currentTextbox = null;
+            currentSticker = null;
+            stickerConfirmed = false;
+            showStatus('已清理所有元素');
+        }
+
+        // 下载功能 - 使用toBlob避免跨域问题
+        function downloadImage() {
+            try {
+                if (canvas.getObjects().length === 0) {
+                    showStatus('画布为空，无法下载', 'error');
+                    return;
+                }
+
+                showStatus('正在生成图片...');
+                
+                // 使用toBlob方法避免跨域问题
+                canvas.toBlob(function(blob) {
+                    if (blob) {
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.download = `读书会图片_${Date.now()}.png`;
+                        link.href = url;
+                        link.style.display = 'none';
+                        
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        // 清理URL
+                        setTimeout(() => URL.revokeObjectURL(url), 100);
+                        
+                        showStatus('✅ 下载成功！');
+                    } else {
+                        showStatus('❌ 生成图片失败', 'error');
+                    }
+                }, 'image/png', 1);
+
+            } catch (error) {
+                console.error('下载错误:', error);
+                showStatus('❌ 下载失败，请重试', 'error');
+            }
+        }
+
+        // 初始提示
+        showStatus('欢迎使用！请先设置背景');
+    </script>
+</body>
 </html>
